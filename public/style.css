@@ -1,0 +1,94 @@
+/* Style Sheet - Thiết Kế Hiện Đại, Tương Phản Cao, Hỗ Trợ Drawer Mobile & Slider Lớn */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+code, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Thanh cuộn tinh tế */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+/* Custom Range Slider - Nâng cấp to và đầm tay hơn */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px; /* Tăng độ dày track */
+  background: #e2e8f0;
+  border-radius: 9999px;
+  outline: none;
+}
+.dark input[type="range"] {
+  background: #334155;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;  /* Nâng kích thước thumb to dễ bấm trên điện thoại */
+  height: 24px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover,
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.18);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.45);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Card sản phẩm hiện đại */
+.deal-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.deal-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Đảm bảo text không bị tràn */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Hiệu ứng trượt Drawer Mobile mượt mà */
+#filter-sidebar {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

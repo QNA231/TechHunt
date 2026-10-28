@@ -1,0 +1,22 @@
+{
+  "name": "tech-deal-hunter",
+  "version": "1.0.0",
+  "description": "Ứng dụng tổng hợp và săn đồ điện tử, linh kiện máy tính, điện thoại cũ giá tốt",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "chotot",
+    "voz",
+    "nhattao",
+    "aggregator",
+    "deal-hunter",
+    "second-hand",
+    "pc-parts"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}

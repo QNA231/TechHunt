@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Deal Hunter - Săn Đồ Công Nghệ & Linh Kiện Cũ Giá Tốt</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen antialiased pb-16 lg:pb-0">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#0d1322]/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="switchTab('search')">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 font-black text-lg">
+          <i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">Tech Deal Hunter</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400 font-medium block">Săn Đồ Điện Tử & Linh Kiện Cũ</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 overflow-x-auto text-xs sm:text-sm font-medium">
+        <button id="tab-search-btn" onclick="switchTab('search')" class="px-3.5 py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold">
+          <i data-lucide="search" class="w-4 h-4 shrink-0"></i>
+          <span>Tra cứu</span>
+        </button>
+        <button id="tab-verify-btn" onclick="switchTab('verify')" class="px-3.5 py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="shield-check" class="w-4 h-4 shrink-0"></i>
+          <span>Check IMEI / Serial</span>
+        </button>
+        <button id="tab-watchdog-btn" onclick="switchTab('watchdog')" class="px-3.5 py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="bell" class="w-4 h-4 shrink-0"></i>
+          <span>Theo dõi giá</span>
+          <span id="active-watchdog-badge" class="hidden px-1.5 py-0.2 text-[10px] bg-blue-600 text-white rounded-full font-bold">0</span>
+        </button>
+      </nav>
+
+      <!-- Theme Switcher (Light / Dark) -->
+      <div class="flex items-center space-x-2 shrink-0">
+        <button 
+          id="theme-toggle-btn" 
+          onclick="toggleTheme()" 
+          class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-xs"
+          title="Chuyển chế độ Sáng / Tối"
+        >
+          <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- === VIEW 1: BỐ CỤC SIDEBAR THÒ THỤT TRÊN MOBILE + NỘI DUNG CUỘN === -->
+    <div id="view-search" class="flex flex-col lg:flex-row gap-6 items-start">
+      
+      <!-- BACKDROP MỜ CHO MOBILE DRAWER -->
+      <div 
+        id="sidebar-backdrop" 
+        onclick="closeMobileFilter()" 
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden lg:hidden transition-opacity"
+      ></div>
+
+      <!-- SIDEBAR BỘ LỌC (CỐ ĐỊNH TRÊN DESKTOP, THÒ THỤT TRÊN MOBILE) -->
+      <aside 
+        id="filter-sidebar" 
+        class="fixed inset-y-0 left-0 z-50 w-[330px] max-w-[88vw] bg-white dark:bg-[#111827] border-r lg:border border-slate-200 dark:border-slate-800 p-5 overflow-y-auto transform -translate-x-full lg:translate-x-0 lg:static lg:w-84 lg:z-auto lg:h-auto lg:max-h-[calc(100vh-6rem)] lg:sticky lg:top-20 lg:rounded-2xl shadow-2xl lg:shadow-sm space-y-5"
+      >
+        
+        <!-- Header Sidebar có Nút Đóng Trên Mobile -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            </div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider">Bộ Lọc Săn Kèo</h3>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="resetFilters()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold px-2 py-1">
+              Đặt lại
+            </button>
+            <!-- Nút đóng Sidebar trên Mobile -->
+            <button type="button" onclick="closeMobileFilter()" class="lg:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <form id="search-form" onsubmit="handleSearch(event)" class="space-y-5">
+          
+          <!-- 1. Ô Tìm Kiếm - Chiều Cao Thoáng (h-12) & Dấu X Xóa Nhanh -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Từ khóa cần tìm</label>
+            <div class="relative flex items-center">
+              <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="VD: iPhone 13, RTX 3060, T14..." 
+                oninput="toggleClearBtn(this, 'search-clear-btn')"
+                class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl pl-11 pr-10 text-sm sm:text-base outline-none transition font-medium"
+              >
+              <button 
+                type="button" 
+                id="search-clear-btn" 
+                onclick="clearInput('search-input', this)" 
+                class="hidden absolute right-3 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                title="Xóa nhanh"
+              >
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Gợi ý nhanh dạng chip to dễ bấm -->
+          <div class="flex flex-wrap gap-1.5 text-xs">
+            <span class="text-slate-400 text-[11px] w-full font-medium">Gợi ý tìm nhanh:</span>
+            <button type="button" onclick="setQuery('RTX 3060')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 font-medium transition">RTX 3060</button>
+            <button type="button" onclick="setQuery('iPhone 13')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 font-medium transition">iPhone 13</button>
+            <button type="button" onclick="setQuery('ThinkPad T14')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 font-medium transition">ThinkPad T14</button>
+            <button type="button" onclick="setQuery('i5 12400F')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 font-medium transition">i5 12400F</button>
+          </div>
+
+          <!-- 2. Danh Mục Thiết Bị - Nút To & Rõ Ràng (h-12 / p-3.5) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">Danh mục thiết bị</label>
+            <div class="grid grid-cols-2 gap-2 text-sm font-semibold" id="category-pills">
+              <button type="button" onclick="selectCategory('all')" data-cat="all" class="cat-pill active p-3 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-2 shadow-xs">
+                <span class="text-base">🌐</span>
+                <span>Tất cả</span>
+              </button>
+              <button type="button" onclick="selectCategory('pc')" data-cat="pc" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+                <span class="text-base">🖥️</span>
+                <span>Linh kiện PC</span>
+              </button>
+              <button type="button" onclick="selectCategory('phone')" data-cat="phone" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+                <span class="text-base">📱</span>
+                <span>Điện thoại</span>
+              </button>
+              <button type="button" onclick="selectCategory('laptop')" data-cat="laptop" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+                <span class="text-base">💻</span>
+                <span>Laptop</span>
+              </button>
+            </div>
+            <input type="hidden" id="filter-category" value="all">
+          </div>
+
+          <!-- 3. Thanh Trượt Khoảng Giá (Thanh Dày & Nút Trượt Lớn) -->
+          <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Khoảng giá tối đa</span>
+              <span id="slider-price-label" class="font-bold text-blue-600 dark:text-blue-400 font-mono text-sm bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800">Tất cả giá</span>
+            </div>
+
+            <!-- Thanh trượt lớn -->
+            <div class="py-2">
+              <input 
+                type="range" 
+                id="price-range-slider" 
+                min="0" 
+                max="30000000" 
+                step="500000" 
+                value="30000000"
+                oninput="handleSliderChange(this.value)"
+                class="w-full cursor-pointer"
+              >
+            </div>
+
+            <!-- Preset Buttons nhanh (To hơn, cao hơn: py-2) -->
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-semibold">
+              <button type="button" onclick="setPricePreset(0)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">Tất cả</button>
+              <button type="button" onclick="setPricePreset(5000000)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">&lt; 5tr</button>
+              <button type="button" onclick="setPricePreset(12000000)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">&lt; 12tr</button>
+              <button type="button" onclick="setPricePreset(20000000)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">&lt; 20tr</button>
+            </div>
+            <input type="hidden" id="filter-max-price" value="">
+          </div>
+
+          <!-- 4. Khu Vực Giao Dịch (Chiều Cao h-12) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Khu vực</label>
+            <select id="filter-region" onchange="performSearch(document.getElementById('search-input').value)" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-medium">
+              <option value="all">📍 Toàn quốc</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+            </select>
+          </div>
+
+          <!-- 5. Công Tắc Thông Minh (Khoang chọn dày dặn: p-3.5) -->
+          <div class="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block uppercase tracking-wide">Tùy chọn chất lượng</span>
+            
+            <!-- Switch 1: Lọc rác & máy xác -->
+            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+              <span class="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5">
+                <span>🛡️</span>
+                <span>Lọc tin rác / Máy xác / iCloud</span>
+              </span>
+              <input type="checkbox" id="filter-hide-scam" checked onchange="performSearch(document.getElementById('search-input').value)" class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
+            </label>
+
+            <!-- Switch 2: Chỉ người dùng bán -->
+            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+              <span class="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5">
+                <span>👤</span>
+                <span>Chỉ người dùng (Ẩn thợ)</span>
+              </span>
+              <input type="checkbox" id="filter-user-only" onchange="performSearch(document.getElementById('search-input').value)" class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
+            </label>
+          </div>
+
+          <!-- Nút áp dụng tìm kiếm (Cao & Đầm tay: h-12) -->
+          <button 
+            type="submit" 
+            onclick="closeMobileFilter()"
+            class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-md shadow-blue-500/20 flex items-center justify-center space-x-2 transition active:scale-[0.98]"
+          >
+            <i data-lucide="filter" class="w-5 h-5"></i>
+            <span>Áp Dụng Bộ Lọc</span>
+          </button>
+
+        </form>
+
+      </aside>
+
+      <!-- MAIN CONTENT (Khu Vực Nội Dung Cuộn Tự Do) -->
+      <section class="flex-1 min-w-0 w-full space-y-5">
+        
+        <!-- Thanh Toolbar Sắp Xếp & Nút Mở Bộ Lọc Nhanh Trên Mobile -->
+        <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3">
+          
+          <div class="flex items-center space-x-2 min-w-0">
+            <!-- Nút mở drawer trên mobile -->
+            <button 
+              type="button" 
+              onclick="openMobileFilter()" 
+              class="lg:hidden flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold text-xs sm:text-sm border border-blue-200 dark:border-blue-800 shrink-0"
+            >
+              <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+              <span>Lọc</span>
+            </button>
+
+            <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
+              Tìm thấy <b id="results-count" class="text-slate-900 dark:text-white font-bold">0</b> món đồ
+              <span class="hidden md:inline">(trong <span id="results-time">0</span>ms)</span>
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-2 shrink-0">
+            <!-- Sắp xếp dropdown (h-10) -->
+            <div class="flex items-center space-x-1.5 text-xs">
+              <span class="text-slate-500 dark:text-slate-400 shrink-0 hidden sm:inline">Sắp xếp:</span>
+              <select id="filter-sort" onchange="applySorting()" class="h-10 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-semibold">
+                <option value="deal">🔥 Ưu tiên giá hời nhất</option>
+                <option value="price_asc">💵 Giá từ thấp đến cao</option>
+                <option value="price_desc">💎 Giá từ cao đến thấp</option>
+                <option value="newest">⏱️ Mới đăng gần nhất</option>
+              </select>
+            </div>
+
+            <!-- Chế độ xem: Grid hoặc List -->
+            <div class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <button type="button" id="view-mode-grid" onclick="setViewMode('grid')" class="p-2 rounded-lg text-blue-600 bg-white dark:bg-slate-900 shadow-xs" title="Xem dạng lưới">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+              </button>
+              <button type="button" id="view-mode-list" onclick="setViewMode('list')" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Xem dạng danh sách">
+                <i data-lucide="list" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Thống Kê Khoảng Giá Thị Trường -->
+        <div id="stats-banner" class="hidden bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2 min-w-0">
+              <i data-lucide="trending-down" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+              <span class="font-bold text-slate-800 dark:text-slate-200">Khoảng giá thị trường</span>
+              <span id="stat-query-name" class="text-blue-600 dark:text-blue-400 font-semibold truncate max-w-xs"></span>
+            </div>
+            <span class="text-slate-400 text-[11px] shrink-0">Dựa trên dữ liệu tổng hợp</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center sm:text-left">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-l-4 border-emerald-500 border border-slate-100 dark:border-slate-800">
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Giá thấp nhất</span>
+              <span id="stat-min-price" class="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono truncate block mt-0.5">0 đ</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-l-4 border-blue-500 border border-slate-100 dark:border-slate-800">
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Giá trung vị</span>
+              <span id="stat-median-price" class="text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 font-mono truncate block mt-0.5">0 đ</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-l-4 border-slate-400 border border-slate-100 dark:border-slate-800">
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Giá cao nhất</span>
+              <span id="stat-max-price" class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 font-mono truncate block mt-0.5">0 đ</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border-l-4 border-rose-500 border border-slate-100 dark:border-slate-800">
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">Kèo hời</span>
+              <span id="stat-deal-count" class="text-xs sm:text-sm font-black text-rose-600 dark:text-rose-400 truncate block mt-0.5">0 món</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mở Nhanh Trên Các Hội Nhóm Facebook Uy Tín (Deep Search Engine) -->
+        <div id="fb-groups-banner" class="bg-gradient-to-r from-blue-50 via-indigo-50 to-white dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-[#111827] border border-blue-200/80 dark:border-blue-900/40 rounded-2xl p-4 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                f
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Săn Kèo Trên Hội Nhóm Facebook (1-Click mở bài đăng mới nhất)
+              </h4>
+            </div>
+            <span class="text-[11px] text-blue-600 dark:text-blue-400 font-medium hidden sm:inline">Tự động áp dụng bộ lọc Recent Posts</span>
+          </div>
+          
+          <div id="fb-groups-list" class="flex flex-wrap gap-2 pt-1 text-xs">
+            <!-- Render danh sách nhóm qua JS -->
+          </div>
+        </div>
+
+        <!-- Trạng thái tải -->
+        <div id="loading-state" class="hidden py-16 text-center space-y-3">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-3 border-blue-600 border-t-transparent"></div>
+          <p class="text-xs sm:text-sm text-slate-500 font-medium">Đang quét đa nguồn...</p>
+        </div>
+
+        <!-- Danh sách thẻ sản phẩm (Grid / List) -->
+        <div id="results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Render bài đăng qua Javascript -->
+        </div>
+
+        <!-- Trạng thái trống -->
+        <div id="empty-state" class="hidden py-16 text-center space-y-3 bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+            <i data-lucide="package-search" class="w-7 h-7"></i>
+          </div>
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Không tìm thấy sản phẩm phù hợp</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto">Thử kéo thanh trượt giá rộng hơn, hoặc bấm "Đặt lại" bộ lọc ở cột bên trái.</p>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- === NÚT MỞ BỘ LỌC NỔI DÀNH RIÊNG CHO MOBILE (THÒ THỤT TIỆN LỢI) === -->
+    <div id="mobile-filter-fab" class="lg:hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40">
+      <button 
+        type="button" 
+        onclick="openMobileFilter()" 
+        class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-full shadow-xl shadow-blue-600/30 flex items-center space-x-2 active:scale-95 transition-all text-xs sm:text-sm border-2 border-white/20 backdrop-blur"
+      >
+        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <span>Bộ Lọc & Tìm Kiếm</span>
+      </button>
+    </div>
+
+    <!-- === VIEW 2: CHECK IMEI & SERIAL === -->
+    <div id="view-verify" class="hidden max-w-4xl mx-auto space-y-6">
+      
+      <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs">
+        <div class="flex items-center space-x-3 mb-2">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Thẩm Định IMEI & Serial</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Kiểm tra thuật toán Luhn Checksum, nhận diện TAC & truy cứu nguồn gốc</p>
+          </div>
+        </div>
+
+        <!-- Input Box có nút X xóa nhanh (h-12 / h-14) -->
+        <div class="mt-6 space-y-3.5">
+          <div class="relative flex flex-col sm:flex-row gap-2.5">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                id="verify-input" 
+                placeholder="Nhập 15 số IMEI hoặc Serial thiết bị..." 
+                oninput="toggleClearBtn(this, 'verify-clear-btn')"
+                class="w-full h-12 sm:h-14 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-blue-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl px-4 text-sm sm:text-base font-mono outline-none transition font-medium"
+              >
+              <button 
+                type="button" 
+                id="verify-clear-btn" 
+                onclick="clearInput('verify-input', this)" 
+                class="hidden absolute right-3 top-3.5 sm:top-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                title="Xóa nhanh"
+              >
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="handleVerifyCode()" 
+              class="h-12 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold px-7 rounded-xl text-sm sm:text-base flex items-center justify-center space-x-2 transition shrink-0 shadow-md shadow-blue-500/20 active:scale-[0.98]"
+            >
+              <i data-lucide="check" class="w-5 h-5"></i>
+              <span>Kiểm Tra Ngay</span>
+            </button>
+          </div>
+
+          <!-- Mẫu thử nhanh -->
+          <div class="flex items-center flex-wrap gap-2 text-xs text-slate-400 pt-1">
+            <span class="text-slate-500 text-xs mr-1 font-medium">Mẫu thử:</span>
+            <button type="button" onclick="setVerifyCode('359201101234566')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 font-mono text-xs transition border border-slate-200 dark:border-slate-700">359201101234566 (Chuẩn GSMA)</button>
+            <button type="button" onclick="setVerifyCode('359201101234567')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-mono text-xs transition border border-slate-200 dark:border-slate-700">359201101234567 (Sai Checksum)</button>
+            <button type="button" onclick="setVerifyCode('F2LX90KBMD6R')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 font-mono text-xs transition border border-slate-200 dark:border-slate-700">F2LX90KBMD6R (Apple Serial)</button>
+          </div>
+        </div>
+
+        <!-- Bảng kết quả thẩm định -->
+        <div id="verify-result" class="hidden mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-4">
+          <!-- Render qua JS -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- === VIEW 3: THEO DÕI GIÁ (WATCHDOG) === -->
+    <div id="view-watchdog" class="hidden max-w-5xl mx-auto space-y-6">
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Form Đăng ký (Chiều cao h-12 đầm tay) -->
+        <div class="lg:col-span-1 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div class="flex items-center space-x-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            </div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Thêm Mục Theo Dõi</h3>
+          </div>
+
+          <form id="watchdog-form" onsubmit="handleCreateWatchdog(event)" class="space-y-4 text-xs sm:text-sm">
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase text-xs tracking-wide">Tên thiết bị (*)</label>
+              <div class="relative flex items-center">
+                <input type="text" id="wd-keyword" required placeholder="VD: RTX 3060, iPhone 13..." oninput="toggleClearBtn(this, 'wd-kw-clear')" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 pr-10 font-medium">
+                <button type="button" id="wd-kw-clear" onclick="clearInput('wd-keyword', this)" class="hidden absolute right-3 p-1.5 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase text-xs tracking-wide">Mức giá trần (VNĐ) (*)</label>
+              <div class="relative flex items-center">
+                <input type="number" id="wd-max-price" required placeholder="VD: 4000000" oninput="toggleClearBtn(this, 'wd-price-clear')" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 pr-10 font-medium">
+                <button type="button" id="wd-price-clear" onclick="clearInput('wd-max-price', this)" class="hidden absolute right-3 p-1.5 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase text-xs tracking-wide">Danh mục</label>
+              <select id="wd-category" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-medium">
+                <option value="all">Tất cả danh mục</option>
+                <option value="pc">Linh kiện PC / Máy bàn</option>
+                <option value="phone">Điện thoại / Tablet</option>
+                <option value="laptop">Laptop / MacBook</option>
+              </select>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+              <span class="text-slate-500 dark:text-slate-400 block font-semibold text-xs uppercase tracking-wide">Báo qua Telegram (Tùy chọn)</span>
+              <input type="text" id="wd-bot-token" placeholder="Bot Token (@BotFather)" class="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-xs font-mono outline-none focus:border-blue-500">
+              <input type="text" id="wd-chat-id" placeholder="Chat ID (@userinfobot)" class="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-xs font-mono outline-none focus:border-blue-500">
+            </div>
+
+            <div class="pt-2 flex items-center space-x-2">
+              <button type="button" onclick="testTelegram()" class="w-1/2 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition font-bold text-xs sm:text-sm">
+                Thử bot
+              </button>
+              <button type="submit" class="w-1/2 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md shadow-blue-500/20 text-xs sm:text-sm active:scale-[0.98]">
+                Kích hoạt
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Danh sách đang theo dõi -->
+        <div class="lg:col-span-2 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Mục Đang Quét Ngầm</h3>
+            <span id="watchdogs-count" class="text-xs text-slate-500 dark:text-slate-400 font-semibold">0 mục</span>
+          </div>
+
+          <div id="watchdogs-list" class="space-y-2.5">
+            <!-- Render qua JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
