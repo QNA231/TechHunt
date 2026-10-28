@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="grad-blue" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="grad-accent" x1="12" y1="12" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Shield -->
+  <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#grad-blue)"/>
+  
+  <!-- Outer Crosshair / Radar Rings -->
+  <circle cx="24" cy="24" r="14" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
+  <circle cx="24" cy="24" r="8" stroke="#ffffff" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <!-- Stylized Tech Target Core -->
+  <circle cx="24" cy="24" r="3.5" fill="#ffffff"/>
+  
+  <!-- Crosshair Pointer Bars -->
+  <line x1="24" y1="6" x2="24" y2="10" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="24" y1="38" x2="24" y2="42" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="6" y1="24" x2="10" y2="24" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="38" y1="24" x2="42" y2="24" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

@@ -1,9 +1,9 @@
 @echo off
-title Tech Deal Hunter Server
+title TechHunter Server
 cd /d "%~dp0"
 
 echo ============================================================
-echo         TECH DEAL HUNTER - HE THONG SAN DO CONG NGHE
+echo         TECHHUNTER - SAN DO CONG NGHE & LINH KIEN CU
 echo ============================================================
 echo.
 echo [*] Giai phong cong 3000 neu co tien trinh cu dang chay...

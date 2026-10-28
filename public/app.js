@@ -139,9 +139,32 @@ function selectCategory(cat) {
   pills.forEach(p => {
     const pCat = p.getAttribute("data-cat");
     if (pCat === cat) {
-      p.className = "cat-pill active px-2.5 py-2 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold transition text-left flex items-center gap-1.5";
+      p.className = "cat-pill active p-3 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-2 shadow-xs";
     } else {
-      p.className = "cat-pill px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5";
+      p.className = "cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs";
+    }
+  });
+
+  performSearch(document.getElementById("search-input").value);
+}
+
+// === CHỌN NGUỒN NỀN TẢNG (PILLS) ===
+
+function selectSource(src) {
+  document.getElementById("filter-source").value = src;
+  const label = document.getElementById("source-filter-label");
+
+  const pills = document.querySelectorAll(".source-pill");
+  pills.forEach(p => {
+    const pSrc = p.getAttribute("data-source");
+    if (pSrc === src) {
+      p.className = "source-pill active py-2 px-2.5 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-1.5 shadow-xs";
+      if (label) {
+        const nameSpan = p.querySelector("span:last-child");
+        label.textContent = nameSpan ? nameSpan.textContent : src;
+      }
+    } else {
+      p.className = "source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5";
     }
   });
 
@@ -156,6 +179,7 @@ function resetFilters() {
   toggleClearBtn(searchInput, "search-clear-btn");
 
   selectCategory("all");
+  selectSource("all");
   setPricePreset(0);
 
   document.getElementById("filter-region").value = "all";
@@ -233,6 +257,7 @@ async function performSearch(query) {
   emptyState.classList.add("hidden");
 
   const category = document.getElementById("filter-category").value;
+  const source = document.getElementById("filter-source")?.value || "all";
   const maxPrice = document.getElementById("filter-max-price").value;
   const region = document.getElementById("filter-region").value;
   const hideScam = document.getElementById("filter-hide-scam").checked;
@@ -247,6 +272,10 @@ async function performSearch(query) {
     userOnly: userOnly ? "true" : "false",
     sortBy
   });
+
+  if (source && source !== "all") {
+    params.append("sources", source);
+  }
 
   if (maxPrice) params.append("maxPrice", maxPrice);
 
@@ -397,22 +426,24 @@ function renderResults(items) {
   }
 
   items.forEach(item => {
-    // Nhãn nguồn - Màu tương phản rõ ràng, sạch sẽ
-    let sourceBadgeClass = "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-300 dark:border-amber-800/50";
-    if (item.sourceBadge === "voz") sourceBadgeClass = "bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-300 dark:border-blue-800/50";
-    if (item.sourceBadge === "nhattao") sourceBadgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/50";
-    if (item.sourceBadge === "retail") sourceBadgeClass = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border-rose-300 dark:border-rose-800/50";
-    if (item.sourceBadge === "hoangha") sourceBadgeClass = "bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 border-purple-300 dark:border-purple-800/50";
-    if (item.sourceBadge === "fpt") sourceBadgeClass = "bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300 border-orange-300 dark:border-orange-800/50";
-    if (item.sourceBadge === "laptop88") sourceBadgeClass = "bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300 border-teal-300 dark:border-teal-800/50";
-    if (item.sourceBadge === "pcpart") sourceBadgeClass = "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800/50";
+    // Nhãn nguồn - Màu tương phản rõ ràng, sắc nét không bị mờ
+    let sourceBadgeClass = "bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:text-amber-200 border-amber-300 dark:border-amber-700";
+    if (item.sourceBadge === "voz") sourceBadgeClass = "bg-blue-100 text-blue-900 dark:bg-blue-950/70 dark:text-blue-200 border-blue-300 dark:border-blue-700";
+    if (item.sourceBadge === "nhattao") sourceBadgeClass = "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700";
+    if (item.sourceBadge === "cellphones") sourceBadgeClass = "bg-rose-100 text-rose-900 dark:bg-rose-950/70 dark:text-rose-200 border-rose-300 dark:border-rose-700";
+    if (item.sourceBadge === "tgdd") sourceBadgeClass = "bg-yellow-100 text-yellow-900 dark:bg-yellow-950/70 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700";
+    if (item.sourceBadge === "hoangha") sourceBadgeClass = "bg-purple-100 text-purple-900 dark:bg-purple-950/70 dark:text-purple-200 border-purple-300 dark:border-purple-700";
+    if (item.sourceBadge === "fpt") sourceBadgeClass = "bg-orange-100 text-orange-900 dark:bg-orange-950/70 dark:text-orange-200 border-orange-300 dark:border-orange-700";
+    if (item.sourceBadge === "laptop88") sourceBadgeClass = "bg-teal-100 text-teal-900 dark:bg-teal-950/70 dark:text-teal-200 border-teal-300 dark:border-teal-700";
+    if (item.sourceBadge === "pcpart") sourceBadgeClass = "bg-cyan-100 text-cyan-900 dark:bg-cyan-950/70 dark:text-cyan-200 border-cyan-300 dark:border-cyan-700";
+    if (item.sourceBadge === "retail") sourceBadgeClass = "bg-rose-100 text-rose-900 dark:bg-rose-950/70 dark:text-rose-200 border-rose-300 dark:border-rose-700";
 
     // Nhãn đánh giá giá hời
     let ratingBadge = '';
     if (item.dealRating && item.dealRating.level === "super_deal") {
-      ratingBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 shrink-0">🔥 Kèo rất hời</span>`;
+      ratingBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 shrink-0">🔥 Kèo rất hời</span>`;
     } else if (item.dealRating && item.dealRating.level === "good_deal") {
-      ratingBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">✨ Giá tốt</span>`;
+      ratingBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 shrink-0">✨ Giá tốt</span>`;
     }
 
     // Huy hiệu IMEI / Serial
@@ -449,12 +480,15 @@ function renderResults(items) {
       card.className = "deal-card bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0";
       card.innerHTML = `
         <div class="flex items-center space-x-3.5 min-w-0 flex-1">
-          <img 
-            src="${item.image}" 
-            alt="${escapeHtml(item.title)}" 
-            class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shrink-0 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
-            onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
-          >
+          <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="shrink-0 block">
+            <img 
+              src="${item.image}" 
+              alt="${escapeHtml(item.title)}" 
+              referrerpolicy="no-referrer"
+              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:opacity-90 transition"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
+            >
+          </a>
           <div class="space-y-1.5 min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${sourceBadgeClass}">${item.source}</span>
@@ -462,51 +496,42 @@ function renderResults(items) {
               <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(item.location || 'Toàn quốc')}</span>
               <span class="text-[11px] text-slate-400">• ${timeAgo(item.postedTime)}</span>
             </div>
-            <h4 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug hover:text-blue-600 dark:hover:text-blue-400 transition" title="${escapeHtml(item.title)}">
-              ${escapeHtml(item.title)}
+            <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
+              <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline-flex items-center gap-1.5 group" title="${escapeHtml(item.title)}">
+                <span>${escapeHtml(item.title)}</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 shrink-0 inline"></i>
+              </a>
             </h4>
             ${hardwareBadge}
           </div>
         </div>
 
-        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
           <div class="text-left sm:text-right">
-            <div class="text-lg font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">${formatVND(item.price)}</div>
+            <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">${formatVND(item.price)}</div>
             <span class="text-[11px] text-slate-400">${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}</span>
           </div>
-          <a 
-            href="${item.url}" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-slate-700 dark:text-slate-200 font-semibold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition"
-          >
-            <span>Xem tin</span>
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-          </a>
         </div>
       `;
     } else {
       // DẠNG LƯỚI (GRID VIEW)
       card.className = "deal-card bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between min-w-0 shadow-xs hover:shadow-md transition";
       card.innerHTML = `
-        <div class="min-w-0">
-          <!-- Ảnh đại diện -->
+        <div class="min-w-0 flex flex-col h-full">
+          <!-- Ảnh đại diện - Sạch sẽ không còn badge bị mờ che trên ảnh -->
           <div class="relative h-44 w-full bg-slate-100 dark:bg-slate-900 overflow-hidden group shrink-0">
-            <img 
-              src="${item.image}" 
-              alt="${escapeHtml(item.title)}" 
-              class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
-              onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
-            >
-            <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 max-w-[65%]">
-              <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold border backdrop-blur-md truncate ${sourceBadgeClass}">
-                ${item.source}
-              </span>
-            </div>
-            <div class="absolute top-2.5 right-2.5 max-w-[40%] flex justify-end">
-              ${ratingBadge}
-            </div>
-            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-200 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs">
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="block w-full h-full">
+              <img 
+                src="${item.image}" 
+                alt="${escapeHtml(item.title)}" 
+                referrerpolicy="no-referrer"
+                class="w-full h-full object-cover group-hover:scale-104 transition-transform duration-200"
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
+              >
+            </a>
+            
+            <!-- Vị trí & Thời gian tinh gọn ở chân ảnh -->
+            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-200 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs border border-slate-200/60 dark:border-slate-800/60 pointer-events-none">
               <span class="truncate min-w-0 flex items-center gap-1 font-medium">
                 <i data-lucide="map-pin" class="w-3 h-3 text-slate-400 shrink-0"></i>
                 <span class="truncate">${escapeHtml(item.location || 'Toàn quốc')}</span>
@@ -518,51 +543,54 @@ function renderResults(items) {
             </div>
           </div>
 
-          <!-- Nội dung chi tiết -->
-          <div class="p-4 space-y-2.5 min-w-0">
-            <h4 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug hover:text-blue-600 dark:hover:text-blue-400 transition" title="${escapeHtml(item.title)}">
-              ${escapeHtml(item.title)}
-            </h4>
-
-            <!-- Giá & Loại người bán -->
-            <div class="flex items-baseline justify-between gap-1 min-w-0">
-              <div class="min-w-0">
-                <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight truncate">
-                  ${formatVND(item.price)}
-                </div>
-                <div class="text-xs text-slate-400 truncate">
-                  ${item.dealRating?.desc || "Mức giá hợp lý"}
-                </div>
-              </div>
+          <!-- Nội dung chi tiết nằm ở phần dưới, rõ ràng, độ tương phản cao -->
+          <div class="p-4 space-y-3 min-w-0 flex-1 flex flex-col justify-between">
+            <div class="space-y-2.5 min-w-0">
               
-              <div class="shrink-0">
-                <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
-                  ${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}
+              <!-- Badges nguồn & Deal - Đưa xuống đây để nét căng và không bị mờ -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold border ${sourceBadgeClass}">
+                  ${item.source}
                 </span>
+                ${ratingBadge}
               </div>
+
+              <!-- Tiêu đề sản phẩm gắn link trực tiếp -->
+              <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline group" title="${escapeHtml(item.title)}">
+                  <span>${escapeHtml(item.title)}</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 inline ml-1 align-baseline shrink-0"></i>
+                </a>
+              </h4>
+
+              <!-- Giá & Loại người bán -->
+              <div class="flex items-baseline justify-between gap-1 min-w-0 pt-0.5">
+                <div class="min-w-0">
+                  <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight truncate">
+                    ${formatVND(item.price)}
+                  </div>
+                  <div class="text-xs text-slate-400 truncate">
+                    ${item.dealRating?.desc || "Mức giá hợp lý"}
+                  </div>
+                </div>
+                
+                <div class="shrink-0">
+                  <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                    ${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Mô tả ngắn gọn -->
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 break-anywhere bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                ${escapeHtml(item.description || item.condition || "Đã qua sử dụng, bấm vào tiêu đề để xem chi tiết bài đăng.")}
+              </p>
+
+              <!-- Huy hiệu IMEI / Serial nếu có -->
+              ${hardwareBadge}
+
             </div>
-
-            <!-- Mô tả ngắn gọn -->
-            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 break-anywhere bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-              ${escapeHtml(item.description || item.condition || "Đã qua sử dụng, bấm để xem chi tiết bài đăng.")}
-            </p>
-
-            <!-- Huy hiệu IMEI / Serial nếu có -->
-            ${hardwareBadge}
           </div>
-        </div>
-
-        <!-- Nút liên kết bài đăng gốc -->
-        <div class="p-4 pt-0">
-          <a 
-            href="${item.url}" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="w-full bg-slate-100 dark:bg-slate-800/90 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-slate-700 dark:text-slate-200 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition active:scale-[0.98]"
-          >
-            <span>Xem bài đăng trên ${item.source}</span>
-            <i data-lucide="external-link" class="w-3.5 h-3.5 shrink-0"></i>
-          </a>
         </div>
       `;
     }

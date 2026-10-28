@@ -1,7 +1,7 @@
 {
-  "name": "tech-deal-hunter",
+  "name": "techhunter",
   "version": "1.0.0",
-  "description": "Ứng dụng tổng hợp và săn đồ điện tử, linh kiện máy tính, điện thoại cũ giá tốt",
+  "description": "TechHunter - Săn Đồ Công Nghệ & Linh Kiện Cũ Giá Tốt Đa Nền Tảng",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -9,14 +9,17 @@
     "dev": "node --watch src/server.js"
   },
   "keywords": [
+    "techhunter",
     "chotot",
     "voz",
     "nhattao",
+    "cellphones",
+    "tgdd",
     "aggregator",
     "deal-hunter",
     "second-hand",
     "pc-parts"
   ],
-  "author": "Antigravity",
+  "author": "QNA231",
   "license": "MIT"
 }

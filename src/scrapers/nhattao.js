@@ -67,9 +67,10 @@ function parseNhatTaoHtml(html, query = "") {
     const authorMatch = /data-author="([^"]*)"/i.exec(block) || /class="username"[^>]*>([^<]*)</i.exec(block);
     const sellerName = authorMatch ? authorMatch[1].trim() : "Thành viên Nhật Tảo";
 
-    // Lấy ảnh
+    // Lấy ảnh & làm sạch URL tránh bị vỡ/403
     const imgMatch = /<img[^>]*src="([^"]*)"/i.exec(block);
-    const image = imgMatch ? imgMatch[1].replace(/&amp;/g, '&') : "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80";
+    const rawImg = imgMatch ? imgMatch[1] : null;
+    const image = cleanNhatTaoImageUrl(rawImg);
 
     // Phân tích khu vực từ tiêu đề
     const location = extractLocationFromText(title);
@@ -142,4 +143,48 @@ function guessCategory(title = "") {
   if (t.includes("iphone") || t.includes("samsung") || t.includes("xiaomi") || t.includes("oppo") || t.includes("điện thoại")) return "phone";
   if (t.includes("laptop") || t.includes("thinkpad") || t.includes("macbook") || t.includes("dell xps") || t.includes("ipad")) return "laptop";
   return "pc";
+}
+
+/**
+ * Giải mã và làm sạch URL ảnh từ Nhật Tảo, loại bỏ thumbnail.php wrapper
+ */
+function cleanNhatTaoImageUrl(raw) {
+  const defaultFallback = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80";
+  if (!raw) return defaultFallback;
+
+  let url = raw.replace(/&amp;/g, '&').trim();
+
+  // Bóc tách URL gốc từ wrapper thumbnail.php?url=...
+  if (url.includes("thumbnail.php?url=")) {
+    try {
+      const match = /[?&]url=([^&]+)/i.exec(url);
+      if (match && match[1]) {
+        url = decodeURIComponent(match[1]);
+      }
+    } catch {
+      // bỏ qua nếu lỗi giải mã
+    }
+  }
+
+  // Chuẩn hóa giao thức và đường dẫn
+  if (url.startsWith("//")) {
+    url = "https:" + url;
+  } else if (url.startsWith("/")) {
+    url = "https://nhattao.com" + url;
+  } else if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://nhattao.com/" + url;
+  }
+
+  // Lọc bỏ icon diễn đàn không phải ảnh sản phẩm
+  if (
+    url.includes("/styles/") || 
+    url.includes("burger.png") || 
+    url.includes("guest.png") || 
+    url.includes("logo_mobile.png") ||
+    url.includes("write.png")
+  ) {
+    return defaultFallback;
+  }
+
+  return url;
 }

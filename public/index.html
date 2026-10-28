@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tech Deal Hunter - Săn Đồ Công Nghệ & Linh Kiện Cũ Giá Tốt</title>
+  <meta name="referrer" content="no-referrer">
+  <title>TechHunter - Săn Đồ Công Nghệ & Linh Kiện Cũ Giá Tốt</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -36,11 +38,9 @@
       
       <!-- Brand Logo -->
       <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="switchTab('search')">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 font-black text-lg">
-          <i data-lucide="layers" class="w-5 h-5"></i>
-        </div>
+        <img src="logo.svg" alt="TechHunter" class="w-10 h-10 object-contain rounded-xl shadow-md shadow-blue-500/20">
         <div>
-          <span class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">Tech Deal Hunter</span>
+          <span class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">TechHunter</span>
           <span class="text-xs text-slate-500 dark:text-slate-400 font-medium block">Săn Đồ Điện Tử & Linh Kiện Cũ</span>
         </div>
       </div>
@@ -174,7 +174,50 @@
             <input type="hidden" id="filter-category" value="all">
           </div>
 
-          <!-- 3. Thanh Trượt Khoảng Giá (Thanh Dày & Nút Trượt Lớn) -->
+          <!-- 3. Nguồn Nền Tảng (Chợ Tốt, Nhật Tảo, VoZ, CellphoneS, TGDĐ...) -->
+          <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between text-xs">
+              <label class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Nguồn nền tảng</label>
+              <span id="source-filter-label" class="text-blue-600 dark:text-blue-400 font-semibold text-xs">Tất cả</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs font-semibold" id="source-pills">
+              <button type="button" onclick="selectSource('all')" data-source="all" class="source-pill active py-2 px-2.5 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-1.5">
+                <span>🌐</span>
+                <span class="truncate">Tất cả nguồn</span>
+              </button>
+              <button type="button" onclick="selectSource('cellphones')" data-source="cellphones" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🔴</span>
+                <span class="truncate">CellphoneS</span>
+              </button>
+              <button type="button" onclick="selectSource('tgdd')" data-source="tgdd" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🟡</span>
+                <span class="truncate">TGDĐ Đổi Trả</span>
+              </button>
+              <button type="button" onclick="selectSource('chotot')" data-source="chotot" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🟠</span>
+                <span class="truncate">Chợ Tốt</span>
+              </button>
+              <button type="button" onclick="selectSource('nhattao')" data-source="nhattao" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🟢</span>
+                <span class="truncate">Nhật Tảo</span>
+              </button>
+              <button type="button" onclick="selectSource('voz')" data-source="voz" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🔵</span>
+                <span class="truncate">VoZ f68</span>
+              </button>
+              <button type="button" onclick="selectSource('hoangha')" data-source="hoangha" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>🟣</span>
+                <span class="truncate">Hoàng Hà</span>
+              </button>
+              <button type="button" onclick="selectSource('fpt')" data-source="fpt" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+                <span>⚪</span>
+                <span class="truncate">FPT Shop</span>
+              </button>
+            </div>
+            <input type="hidden" id="filter-source" value="all">
+          </div>
+
+          <!-- 4. Thanh Trượt Khoảng Giá (Thanh Dày & Nút Trượt Lớn) -->
           <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
             <div class="flex items-center justify-between text-xs">
               <span class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Khoảng giá tối đa</span>

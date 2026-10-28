@@ -151,13 +151,93 @@ export async function searchRetail(query = "", options = {}) {
       description: "6 nhân 12 luồng, xung nhịp 4.4GHz, cân mượt mọi game và tác vụ đồ họa."
     },
 
-    // --- CELLPHONES & THẾ GIỚI DI ĐỘNG ---
+    // --- CELLPHONES THU CŨ ĐỔI MỚI (BẢO HÀNH 6 THÁNG, THẨM ĐỊNH 30 BƯỚC) ---
+    {
+      id: "cps-ip14prm-128",
+      title: "Apple iPhone 14 Pro Max 128GB - Cũ Đẹp 99% (CellphoneS Thu Cũ)",
+      price: 17490000,
+      source: "CellphoneS Cũ",
+      sourceBadge: "cellphones",
+      url: "https://cellphones.com.vn/hang-cu/dien-thoai-cu/apple.html",
+      image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80",
+      location: "Hệ thống CellphoneS toàn quốc",
+      postedTime: Date.now() - 1000 * 60 * 45,
+      sellerName: "CellphoneS Thu Cũ Đổi Mới",
+      isShop: true,
+      category: "phone",
+      condition: "Cũ Đẹp 99% - Bảo hành 6 tháng 1 đổi 1 trong 30 ngày",
+      description: "Máy nguyên bản tuyển chọn kỹ, pin >88%, màn hình Dynamic Island 120Hz mượt mà, bao test trực tiếp tại cửa hàng."
+    },
+    {
+      id: "cps-ip13-128",
+      title: "Apple iPhone 13 128GB - Cũ Đẹp (CellphoneS)",
+      price: 10490000,
+      source: "CellphoneS Cũ",
+      sourceBadge: "cellphones",
+      url: "https://cellphones.com.vn/hang-cu/dien-thoai-cu/apple/iphone-13.html",
+      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+      location: "Hà Nội & TP.HCM",
+      postedTime: Date.now() - 1000 * 60 * 120,
+      sellerName: "CellphoneS Thu Cũ",
+      isShop: true,
+      category: "phone",
+      condition: "Cũ Đẹp 98-99%",
+      description: "Phiên bản quốc tế VN/A, tặng cáp sạc nhanh 20W, bảo hành toàn diện nguồn màn hình 6 tháng."
+    },
+    {
+      id: "cps-ss-s23ultra",
+      title: "Samsung Galaxy S23 Ultra 5G 256GB - Cũ Đẹp (CellphoneS)",
+      price: 14290000,
+      source: "CellphoneS Cũ",
+      sourceBadge: "cellphones",
+      url: "https://cellphones.com.vn/hang-cu/dien-thoai-cu/samsung.html",
+      image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80",
+      location: "Hệ thống CellphoneS",
+      postedTime: Date.now() - 1000 * 60 * 150,
+      sellerName: "CellphoneS Thu Cũ",
+      isShop: true,
+      category: "phone",
+      condition: "Cũ Đẹp 99% SSVN",
+      description: "Có bút S-Pen tiện lợi, camera 200MP zoom 100x sắc nét, màn hình Dynamic AMOLED 2X 120Hz."
+    },
+    {
+      id: "cps-mac-m2",
+      title: "MacBook Air M2 2022 8GB / 256GB - Cũ Đẹp (CellphoneS)",
+      price: 16990000,
+      source: "CellphoneS Cũ",
+      sourceBadge: "cellphones",
+      url: "https://cellphones.com.vn/hang-cu/laptop-cu/macbook-cu.html",
+      image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
+      location: "Hà Nội & TP.HCM",
+      postedTime: Date.now() - 1000 * 60 * 200,
+      sellerName: "CellphoneS Thu Cũ",
+      isShop: true,
+      category: "laptop",
+      condition: "Máy đẹp 99% - Sạc ít lần",
+      description: "Thiết kế vuông vắn hiện đại, sạc MagSafe tiện lợi, pin trâu 15-18 tiếng, bảo hành 6 tháng."
+    },
+    {
+      id: "cps-asus-tuf",
+      title: "Laptop Gaming Asus TUF A15 FA506 Ryzen 7 6800H / RTX 3050 Cũ (CellphoneS)",
+      price: 13500000,
+      source: "CellphoneS Cũ",
+      sourceBadge: "cellphones",
+      url: "https://cellphones.com.vn/hang-cu/laptop-cu.html",
+      image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=600&q=80",
+      location: "TP.HCM & Hà Nội",
+      postedTime: Date.now() - 1000 * 60 * 240,
+      sellerName: "CellphoneS Thu Cũ",
+      isShop: true,
+      category: "laptop",
+      condition: "Đẹp 98% nguyên bản",
+      description: "Chuẩn độ bền quân đội MIL-STD, màn hình 144Hz, tản nhiệt mát mẻ, cân mọi tựa game Esport và đồ họa."
+    },
     {
       id: "cps-3060-retail",
-      title: "Card màn hình ASUS Dual GeForce RTX 3060 V2 OC 12GB - Cũ đẹp",
+      title: "Card màn hình ASUS Dual GeForce RTX 3060 V2 OC 12GB - Cũ đẹp (CellphoneS)",
       price: 4890000,
       source: "CellphoneS Cũ",
-      sourceBadge: "retail",
+      sourceBadge: "cellphones",
       url: "https://cellphones.com.vn/hang-cu/vga-cu.html",
       image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=600&q=80",
       location: "Hệ thống CellphoneS",
@@ -168,21 +248,87 @@ export async function searchRetail(query = "", options = {}) {
       condition: "Đã kiểm định kỹ thuật, bảo hành 6 tháng",
       description: "Hàng thu lại từ khách nâng cấp, nguyên tem bảo hành, bao test đổi trả 30 ngày."
     },
+
+    // --- THẾ GIỚI DI ĐỘNG MÁY ĐỔI TRẢ (HỆ THỐNG RỘNG NHẤT, BẢO HÀNH CHÍNH HÃNG) ---
     {
       id: "tgdd-ss-flip5",
       title: "Samsung Galaxy Z Flip5 512GB - Máy đổi trả Thế Giới Di Động",
       price: 10890000,
       source: "TGDĐ Đổi Trả",
-      sourceBadge: "retail",
-      url: "https://www.thegioididong.com/may-doi-tra",
+      sourceBadge: "tgdd",
+      url: "https://www.thegioididong.com/may-doi-tra/dien-thoai/samsung-galaxy-z-flip5",
       image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80",
       location: "Các siêu thị TGDĐ toàn quốc",
-      postedTime: Date.now() - 1000 * 60 * 360,
+      postedTime: Date.now() - 1000 * 60 * 60,
       sellerName: "Thế Giới Di Động",
       isShop: true,
       category: "phone",
-      condition: "Bảo hành chính hãng 6 tháng",
-      description: "Máy đổi trả từ khách trải nghiệm, đầy đủ hộp và sạc, hỗ trợ trả góp 0%."
+      condition: "Bảo hành chính hãng 6-9 tháng tại TGDĐ",
+      description: "Máy đổi trả từ khách trải nghiệm, đầy đủ hộp và cáp sạc zin, hỗ trợ trả góp 0%."
+    },
+    {
+      id: "tgdd-ip13-128",
+      title: "iPhone 13 128GB - Máy đổi trả chính hãng TGDĐ",
+      price: 10650000,
+      source: "TGDĐ Đổi Trả",
+      sourceBadge: "tgdd",
+      url: "https://www.thegioididong.com/may-doi-tra/dien-thoai/iphone-13",
+      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+      location: "Các siêu thị TGDĐ toàn quốc",
+      postedTime: Date.now() - 1000 * 60 * 110,
+      sellerName: "Thế Giới Di Động",
+      isShop: true,
+      category: "phone",
+      condition: "Đã kiểm định 100% chức năng, bảo hành hãng",
+      description: "Hàng chính hãng VN/A, bao xài đổi trả tháng đầu tiên nếu có lỗi kỹ thuật."
+    },
+    {
+      id: "tgdd-ip12-64",
+      title: "iPhone 12 64GB - Đổi trả Thế Giới Di Động",
+      price: 7690000,
+      source: "TGDĐ Đổi Trả",
+      sourceBadge: "tgdd",
+      url: "https://www.thegioididong.com/may-doi-tra/dien-thoai/iphone-12",
+      image: "https://images.unsplash.com/photo-1605236453806-6ff36851218e?auto=format&fit=crop&w=600&q=80",
+      location: "Hà Nội, TP.HCM & Đà Nẵng",
+      postedTime: Date.now() - 1000 * 60 * 190,
+      sellerName: "Thế Giới Di Động",
+      isShop: true,
+      category: "phone",
+      condition: "Máy qua sử dụng chính hãng",
+      description: "Thiết kế viền phẳng kim loại cao cấp, chip Apple A14 Bionic nhanh mượt, hỗ trợ 5G."
+    },
+    {
+      id: "tgdd-acer-nitro5",
+      title: "Laptop Acer Nitro 5 Tiger AN515 Core i5 12500H / RTX 3050 - Đổi trả TGDĐ",
+      price: 12200000,
+      source: "TGDĐ Đổi Trả",
+      sourceBadge: "tgdd",
+      url: "https://www.thegioididong.com/may-doi-tra/laptop/acer-nitro-5-tiger",
+      image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=600&q=80",
+      location: "Hệ thống Thế Giới Di Động",
+      postedTime: Date.now() - 1000 * 60 * 220,
+      sellerName: "Thế Giới Di Động",
+      isShop: true,
+      category: "laptop",
+      condition: "Bảo hành chính hãng Acer 5 tháng",
+      description: "Cấu hình i5 gen 12 cực mạnh mẽ, đèn phím RGB 4 vùng, màn hình 144Hz sắc nét."
+    },
+    {
+      id: "tgdd-ipad-gen9",
+      title: "iPad 9 WiFi 64GB - Máy đổi trả Thế Giới Di Động",
+      price: 5290000,
+      source: "TGDĐ Đổi Trả",
+      sourceBadge: "tgdd",
+      url: "https://www.thegioididong.com/may-doi-tra/may-tinh-bang/ipad-9-wifi-64gb",
+      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=80",
+      location: "Toàn quốc (Giao tại siêu thị gần nhất)",
+      postedTime: Date.now() - 1000 * 60 * 300,
+      sellerName: "Thế Giới Di Động",
+      isShop: true,
+      category: "phone",
+      condition: "Đẹp 98% nguyên zin",
+      description: "Màn hình Retina 10.2 inch, hỗ trợ Apple Pencil và Smart Keyboard, học tập và giải trí tuyệt vời."
     }
   ];
 
@@ -192,12 +338,25 @@ export async function searchRetail(query = "", options = {}) {
     filtered = filtered.filter(item => item.category === category);
   }
 
-  if (q) {
-    filtered = filtered.filter(item =>
-      item.title.toLowerCase().includes(q) ||
-      (item.description || "").toLowerCase().includes(q) ||
-      (item.source || "").toLowerCase().includes(q)
+  if (options.sources && options.sources.length > 0) {
+    filtered = filtered.filter(item => 
+      options.sources.includes(item.sourceBadge) || 
+      options.sources.includes(item.source)
     );
+  }
+
+  if (q) {
+    const isCps = q.includes("cellphone") || q.includes("cps");
+    const isTgdd = q.includes("tgdd") || q.includes("thế giới di động") || q.includes("the gioi di dong");
+
+    filtered = filtered.filter(item => {
+      if (isCps && item.sourceBadge === "cellphones") return true;
+      if (isTgdd && item.sourceBadge === "tgdd") return true;
+      return item.title.toLowerCase().includes(q) ||
+        (item.description || "").toLowerCase().includes(q) ||
+        (item.source || "").toLowerCase().includes(q) ||
+        (item.sourceBadge || "").toLowerCase().includes(q);
+    });
   }
 
   return filtered;

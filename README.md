@@ -1,6 +1,6 @@
-# Tech Deal Hunter 🎯
+# TechHunter 🎯
 
-**Hệ thống tổng hợp, tra cứu và săn đồ điện tử, điện thoại, laptop & linh kiện máy tính cũ giá rẻ.**
+**Hệ thống tổng hợp, tra cứu và săn đồ công nghệ, điện thoại, laptop & linh kiện máy tính cũ giá tốt đa nền tảng.**
 
 ---
 
@@ -8,45 +8,46 @@
 
 1. **Tra Cứu Đa Nguồn Song Song (Multi-Source Aggregator):**
    - **Chợ Tốt:** Tận dụng Gateway Public API chính thức để lấy dữ liệu thời gian thực theo danh mục và khu vực.
-   - **VoZ Forums (box f68):** Diễn đàn linh kiện PC uy tín hàng đầu, bóc tách bài đăng và mức giá niêm yết của thành viên.
-   - **Nhật Tảo:** Diễn đàn công nghệ và mua bán đồ cũ lâu năm.
-   - **Chuỗi bán lẻ đổi trả (CellphoneS, Thế Giới Di Động):** Lựa chọn máy cũ đã kiểm định kỹ thuật 30 bước, có bảo hành chính hãng 6-12 tháng.
+   - **Nhật Tảo:** Diễn đàn công nghệ và mua bán đồ cũ lâu năm tại Việt Nam, bóc tách giá thông minh và ảnh chuẩn gốc.
+   - **VoZ Forums (box f68):** Diễn đàn công nghệ hàng đầu, bóc tách bài đăng mới nhất trong 14 ngày.
+   - **Hệ thống bán lẻ & Thu cũ uy tín:** CellphoneS Thu Cũ Đổi Mới, Thế Giới Di Động Máy Đổi Trả, Hoàng Hà Mobile, FPT Shop, Laptop88, Tin Học Ngôi Sao.
+   - **Facebook Groups (1-Click Deep Search):** Tự động tạo link tìm kiếm sẵn bộ lọc "Recent posts" trên các nhóm giao lưu buôn bán công nghệ lớn.
 
-2. **Bộ Lọc Thông Minh & Chống Tin Rác (Anti-Scam Filter):**
-   - Tự động phát hiện và loại bỏ các tin báo giá ảo (1.000đ, 0đ, quảng cáo trả góp trá hình).
-   - Tự động nhận diện từ khóa máy xác / lỗi nặng / dính tài khoản: `xác`, `icloud`, `bypass`, `màn sọc`, `chết nguồn`, `mất face id`, `lỗi vram`...
-   - Tùy chọn lọc: *Chỉ người dùng bán* (loại bớt thợ buôn/tiệm).
+2. **Bộ Lọc Săn Kèo Hiện Đại & Sticky Sidebar:**
+   - Bộ lọc nguồn nền tảng riêng biệt: CellphoneS, TGDĐ, Chợ Tốt, Nhật Tảo, VoZ...
+   - Thanh trượt khoảng giá lớn (Range Slider) kết hợp nút preset nhanh (< 5tr, < 12tr, < 20tr).
+   - Tùy chọn lọc rác / máy xác / iCloud ẩn / hàng lỗi.
+   - Drawer thò thụt tiện lợi tối ưu riêng cho điện thoại di động (Responsive).
+   - Thẻ sản phẩm hiện đại: Tiêu đề gắn link trực tiếp bài đăng, huy hiệu sắc nét độ tương phản cao.
 
-3. **Định Giá Thị Trường & Gắn Nhãn Kèo Thơm (Deal Rating):**
-   - Tự động tính toán giá thấp nhất, giá cao nhất, giá trung bình và **giá trung vị (median)** của thị trường cho model đang tìm.
-   - Đánh giá mức độ hời theo phần trăm chênh lệch:
-     - 🔥 **KÈO SIÊU THƠM:** Rẻ hơn 20%+ so với thị trường.
-     - ✨ **GIÁ TỐT:** Rẻ hơn từ 8% đến 20%.
-     - ⚖️ **GIÁ HỢP LÝ:** Đúng khoảng giá thị trường.
-     - 📈 **GIÁ CAO:** Cao hơn thị trường trên 15%.
+3. **Thẩm Định Phần Cứng Tự Động (IMEI / Serial / Service Tag):**
+   - Tự động quét và kiểm tra thuật toán Luhn Checksum của GSMA cho mã IMEI.
+   - Nhận diện dải TAC quốc tế, thương hiệu thiết bị và cảnh báo mã giả / nhân bản.
+   - Hỗ trợ Apple Serial Number, Dell Service Tag, Lenovo Serial.
 
-4. **Săn Kèo Tự Động 24/7 (Watchdog & Telegram Bot Alert):**
-   - Đặt sẵn tiêu chí theo dõi (ví dụ: *Tìm RTX 3060 dưới 4.2 triệu tại Hà Nội*).
-   - Hệ thống quét nền định kỳ mỗi 5 phút.
-   - Khi có người vừa đăng tin mới thỏa mãn điều kiện, bot sẽ lập tức gửi thông báo kèm ảnh và link bài đăng về điện thoại của bạn qua Telegram.
+4. **Định Giá Thị Trường & Gắn Nhãn Kèo Thơm (Deal Rating):**
+   - Tự động tính toán giá thấp nhất, cao nhất, trung bình và **giá trung vị (median)**.
+   - Gắn nhãn: 🔥 **KÈO RẤT HỜI** (>20% rẻ hơn thị trường), ✨ **GIÁ TỐT** (8-20%).
+
+5. **Săn Kèo Tự Động 24/7 (Watchdog & Telegram Bot Alert):**
+   - Đặt tiêu chí theo dõi ngầm, tự động bắn thông báo kèm link về Telegram.
 
 ---
 
 ## 🚀 Hướng Dẫn Khởi Chạy
 
-Dự án được xây dựng bằng **Node.js 22 thuần túy (Zero External Dependencies)**, không cần cài đặt các thư viện nặng nề hay lo ngại lỗi môi trường.
+Dự án sử dụng **Node.js 22 thuần túy (Zero External Dependencies)**, không cần `npm install`.
 
-### 1. Khởi động Web App:
-Mở Terminal / PowerShell và chạy lệnh:
+### Cách 1: Click Đúp Chuột
+- Click đúp vào file **`Start-App.bat`** trong thư mục `D:\Quan\TechHunter` để khởi động máy chủ và tự động mở trình duyệt!
+- Muốn tạo shortcut ra màn hình chính, chỉ cần click đúp **`Tao-Shortcut-Desktop.bat`**.
+
+### Cách 2: Chạy Qua Command Line
 ```bash
-cd C:\Users\anhqu\.gemini\antigravity\scratch\tech-deal-hunter
+cd D:\Quan\TechHunter
 npm start
 ```
-*(Hoặc `node src/server.js`)*
-
-### 2. Mở trình duyệt:
-Truy cập:
-👉 **http://localhost:3000**
+Truy cập: 👉 **http://localhost:3000**
 
 ---
 
