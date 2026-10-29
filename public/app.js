@@ -4,10 +4,14 @@ let currentResults = [];
 let currentStats = null;
 let currentViewMode = "grid"; // "grid" hoặc "list"
 let searchDebounceTimer = null;
+let lastScrollY = 0;
+let scrollUpAccumulator = 0;
 
 // Khởi chạy khi DOM sẵn sàng
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
+  initSearchHistory();
+  initFabScrollListener();
   lucide.createIcons();
   
   // Tải danh sách sản phẩm ban đầu mà không điền sẵn chữ vào ô input
@@ -94,6 +98,141 @@ function clearInput(inputId, btn) {
   if (inputId === "search-input") {
     performSearch("");
   }
+}
+
+// Xử lý khi gõ ô tìm kiếm: Tự động tìm kiếm tức thì với debounce 350ms
+function handleSearchInput(input) {
+  toggleClearBtn(input, 'search-clear-btn');
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    performSearch(input.value.trim());
+  }, 350);
+}
+
+// === QUẢN LÝ LỊCH SỬ TÌM KIẾM (SEARCH HISTORY) ===
+
+const HISTORY_STORAGE_KEY = "tdh_search_history";
+
+function getSearchHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!raw) return ["iPhone 13", "RTX 3060", "ThinkPad T14"];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSearchHistoryList(list) {
+  try {
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(list.slice(0, 8)));
+  } catch (err) {
+    console.error("Lỗi lưu lịch sử:", err);
+  }
+}
+
+function addSearchHistory(query) {
+  const clean = (query || "").trim();
+  if (!clean || clean.length < 2) return;
+
+  let history = getSearchHistory();
+  history = history.filter(item => item.toLowerCase() !== clean.toLowerCase());
+  history.unshift(clean);
+  saveSearchHistoryList(history);
+  renderSearchHistory();
+}
+
+function removeSearchHistoryItem(itemToRemove) {
+  let history = getSearchHistory();
+  history = history.filter(item => item !== itemToRemove);
+  saveSearchHistoryList(history);
+  renderSearchHistory();
+}
+
+function clearSearchHistory() {
+  saveSearchHistoryList([]);
+  renderSearchHistory();
+}
+
+function initSearchHistory() {
+  renderSearchHistory();
+}
+
+function renderSearchHistory() {
+  const container = document.getElementById("search-history-chips");
+  const clearBtn = document.getElementById("clear-history-btn");
+  if (!container) return;
+
+  const history = getSearchHistory();
+  if (history.length === 0) {
+    container.innerHTML = `<span class="text-[11px] text-slate-400 italic">Chưa có lịch sử tìm kiếm</span>`;
+    if (clearBtn) clearBtn.classList.add("hidden");
+    return;
+  }
+
+  if (clearBtn) clearBtn.classList.remove("hidden");
+  container.innerHTML = "";
+
+  history.forEach(kw => {
+    const chip = document.createElement("div");
+    chip.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer text-xs font-medium group select-none";
+    chip.onclick = () => setQuery(kw);
+
+    chip.innerHTML = `
+      <span class="truncate max-w-[120px]">${escapeHtml(kw)}</span>
+      <button 
+        type="button" 
+        class="text-slate-400 hover:text-rose-500 rounded p-0.5 transition" 
+        title="Xóa mục này"
+        onclick="event.stopPropagation(); removeSearchHistoryItem('${escapeHtml(kw)}')"
+      >
+        <i data-lucide="x" class="w-3 h-3"></i>
+      </button>
+    `;
+    container.appendChild(chip);
+  });
+
+  lucide.createIcons();
+}
+
+// === QUẢN LÝ NÚT BỘ LỌC NỔI (FAB) TRÊN MOBILE ===
+// Ẩn khi ở trên cùng (vì đã có nút Lọc ở toolbar), ẩn khi lướt xuống, hiện khi lướt lên
+
+function initFabScrollListener() {
+  const fab = document.getElementById("mobile-filter-fab");
+  if (!fab) return;
+
+  window.addEventListener("scroll", () => {
+    const currentScrollY = window.scrollY || window.pageYOffset;
+    const delta = currentScrollY - lastScrollY;
+
+    // 1. Khi ở gần trên cùng (<= 100px): Luôn ẩn vì toolbar trên cùng đã có sẵn nút Lọc
+    if (currentScrollY <= 100) {
+      fab.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
+      fab.classList.remove("translate-y-0", "opacity-100");
+      scrollUpAccumulator = 0;
+      lastScrollY = currentScrollY;
+      return;
+    }
+
+    // 2. Khi lướt xuống: Luôn ẩn nút để không che nội dung đang đọc
+    if (delta > 3) {
+      fab.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
+      fab.classList.remove("translate-y-0", "opacity-100");
+      scrollUpAccumulator = 0;
+    }
+    // 3. Khi lướt lên một đoạn nhỏ (khoảng cách > 12px): Hiện nút nổi tiện lợi
+    else if (delta < -3) {
+      scrollUpAccumulator += Math.abs(delta);
+      if (scrollUpAccumulator > 12) {
+        fab.classList.remove("translate-y-24", "opacity-0", "pointer-events-none");
+        fab.classList.add("translate-y-0", "opacity-100");
+      }
+    }
+
+    lastScrollY = currentScrollY;
+  }, { passive: true });
 }
 
 // === THANH TRƯỢT KHOẢNG GIÁ (PRICE RANGE SLIDER) ===
@@ -206,8 +345,8 @@ function switchTab(tab) {
   viewVerify.classList.add("hidden");
   closeMobileFilter();
 
-  const normalClass = "px-3.5 py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium";
-  const activeClass = "px-3.5 py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold";
+  const normalClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium";
+  const activeClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold";
 
   tabSearchBtn.className = normalClass;
   tabWatchdogBtn.className = normalClass;
@@ -247,6 +386,11 @@ function handleSearch(e) {
 // === GỌI API TÌM KIẾM TỔNG HỢP ===
 
 async function performSearch(query) {
+  // Tự động lưu vào lịch sử tìm kiếm nếu có từ khóa
+  if (query && query.trim().length > 0) {
+    addSearchHistory(query.trim());
+  }
+
   const loading = document.getElementById("loading-state");
   const resultsGrid = document.getElementById("results-grid");
   const emptyState = document.getElementById("empty-state");
@@ -338,10 +482,14 @@ async function loadFacebookGroups(query = "", category = "all") {
       a.rel = "noopener noreferrer";
       a.className = "inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 text-slate-800 dark:text-slate-200 font-semibold transition shadow-2xs group text-xs";
       
+      const countClean = (g.members || '').replace(/[\.\,\+]/g, '').trim();
+      const num = parseInt(countClean, 10);
+      const memberLabel = num && !isNaN(num) ? `${Math.round(num / 1000)}k tv` : g.members;
+
       a.innerHTML = `
         <span class="text-blue-600 dark:text-blue-400 font-bold">#</span>
         <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">${escapeHtml(g.name)}</span>
-        <span class="text-[10px] text-slate-400 font-normal">(${escapeHtml(g.members.split(' ')[0])})</span>
+        <span class="text-[10px] text-slate-400 font-normal">(${escapeHtml(memberLabel)})</span>
         <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition"></i>
       `;
 
@@ -583,7 +731,7 @@ function renderResults(items) {
 
               <!-- Mô tả ngắn gọn -->
               <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 break-anywhere bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-                ${escapeHtml(item.description || item.condition || "Đã qua sử dụng, bấm vào tiêu đề để xem chi tiết bài đăng.")}
+                ${escapeHtml(item.description || item.condition || "Đã qua sử dụng")}
               </p>
 
               <!-- Huy hiệu IMEI / Serial nếu có -->
