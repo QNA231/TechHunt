@@ -1273,11 +1273,19 @@ async function testTelegram() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ botToken, chatId })
     });
-    const data = await res.json();
-    if (data.success) {
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    if (res.ok && data?.success) {
       alert("Gửi thành công! Kiểm tra tin nhắn trong Telegram của bạn.");
     } else {
-      alert("Thất bại: " + (data.error || "Không thể gửi tin"));
+      const errMsg = data?.error || (res.status === 404 ? "Cổng kết nối Telegram chưa sẵn sàng trên đám mây. Vui lòng đợi bản triển khai hoàn tất." : `Lỗi máy chủ (mã: ${res.status})`);
+      alert("Thất bại: " + errMsg);
     }
   } catch (err) {
     alert("Lỗi kết nối: " + err.message);

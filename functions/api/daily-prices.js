@@ -1,4 +1,4 @@
-import { DEFAULT_HARDWARE_PRICES } from "../../src/services/dailyPrices.js";
+import { DEFAULT_HARDWARE_PRICES } from "../../src/services/dailyPricesCatalog.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
