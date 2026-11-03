@@ -139,11 +139,18 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // 5.5. Quét thủ công hoặc định kỳ Watchdogs
+    if ((pathname === "/api/watchdogs/scan" || pathname === "/api/watchdog/scan") && (req.method === "POST" || req.method === "GET")) {
+      const result = await runWatchdogScan();
+      sendJson(200, { success: true, ...result });
+      return;
+    }
+
     // 6. Test kết nối Telegram Bot
     if (pathname === "/api/telegram/test" && req.method === "POST") {
       const body = await readJsonBody();
       const { botToken, chatId } = body;
-      const testMsg = "🎉 <b>Kết nối Tech Deal Hunter thành công!</b>\nBot sẵn sàng gửi thông báo khi phát hiện thiết bị hoặc linh kiện giá rẻ cho bạn.";
+      const testMsg = "🎉 <b>Kết nối TechHunt thành công!</b>\nBot sẵn sàng gửi thông báo khi phát hiện thiết bị hoặc linh kiện giá rẻ cho bạn.";
       const testRes = await sendTelegramMessage(botToken, chatId, testMsg);
       sendJson(testRes.success ? 200 : 400, testRes);
       return;

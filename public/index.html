@@ -563,7 +563,19 @@
         <div class="lg:col-span-2 space-y-3">
           <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
             <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Mục đang quét ngầm</h3>
-            <span id="watchdogs-count" class="text-xs text-slate-500 dark:text-slate-400 font-semibold">0 mục</span>
+            <div class="flex items-center space-x-2">
+              <span id="watchdogs-count" class="text-xs text-slate-500 dark:text-slate-400 font-semibold">0 mục</span>
+              <button 
+                type="button" 
+                id="manual-scan-btn" 
+                onclick="triggerManualScan()" 
+                class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 font-bold text-xs flex items-center gap-1 transition active:scale-95 shadow-xs"
+                title="Quét Chợ Tốt ngay và gửi tin về Telegram"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Quét ngay</span>
+              </button>
+            </div>
           </div>
 
           <div id="watchdogs-list" class="space-y-2.5">

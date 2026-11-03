@@ -1042,13 +1042,49 @@ function renderVerifyReport(report) {
 
 // === QUẢN LÝ THEO DÕI GIÁ (WATCHDOG) ===
 
+const WATCHDOGS_STORAGE_KEY = "tdh_local_watchdogs";
+
+function getLocalWatchdogs() {
+  try {
+    const raw = localStorage.getItem(WATCHDOGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalWatchdogs(list) {
+  try {
+    localStorage.setItem(WATCHDOGS_STORAGE_KEY, JSON.stringify(list));
+  } catch {}
+}
+
 async function loadWatchdogs() {
+  const localList = getLocalWatchdogs();
+  if (localList.length > 0) {
+    renderWatchdogs(localList);
+  }
+
   try {
     const res = await fetch("/api/watchdogs");
-    const list = await res.json();
-    renderWatchdogs(list);
+    if (res.ok) {
+      const serverList = await res.json();
+      if (Array.isArray(serverList) && serverList.length > 0) {
+        saveLocalWatchdogs(serverList);
+        renderWatchdogs(serverList);
+      } else if (localList.length > 0) {
+        // Đồng bộ danh sách từ máy lên server nếu server chưa có
+        for (const wd of localList) {
+          fetch("/api/watchdogs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(wd)
+          }).catch(() => {});
+        }
+      }
+    }
   } catch (err) {
-    console.error("Lỗi tải watchdog:", err);
+    console.warn("Dùng danh sách theo dõi từ bộ nhớ cục bộ:", err.message);
   }
 }
 
@@ -1128,40 +1164,97 @@ async function handleCreateWatchdog(e) {
   const telegramBotToken = document.getElementById("wd-bot-token").value.trim();
   const telegramChatId = document.getElementById("wd-chat-id").value.trim();
 
+  const newWd = {
+    id: `wd-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+    keyword,
+    maxPrice: Number(maxPrice) || 0,
+    category,
+    telegramBotToken,
+    telegramChatId,
+    enabled: true,
+    createdAt: Date.now(),
+    lastChecked: null,
+    alertCount: 0,
+    seenIds: []
+  };
+
+  const list = getLocalWatchdogs();
+  list.push(newWd);
+  saveLocalWatchdogs(list);
+  renderWatchdogs(list);
+
+  document.getElementById("wd-keyword").value = "";
+  document.getElementById("wd-max-price").value = "";
+  alert("Đã thêm theo dõi: " + keyword);
+
   try {
-    const res = await fetch("/api/watchdogs", {
+    await fetch("/api/watchdogs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keyword, maxPrice, category, telegramBotToken, telegramChatId })
+      body: JSON.stringify(newWd)
     });
-
-    if (res.ok) {
-      document.getElementById("wd-keyword").value = "";
-      document.getElementById("wd-max-price").value = "";
-      alert("Đã thêm theo dõi: " + keyword);
-      loadWatchdogs();
-    }
   } catch (err) {
-    alert("Lỗi khi thêm theo dõi");
+    // Lưu cục bộ thành công
   }
 }
 
 async function toggleWatchdog(id) {
+  const list = getLocalWatchdogs();
+  const item = list.find(w => w.id === id);
+  if (item) {
+    item.enabled = !item.enabled;
+    saveLocalWatchdogs(list);
+    renderWatchdogs(list);
+  }
+
   try {
     await fetch(`/api/watchdogs/${id}/toggle`, { method: "PATCH" });
-    loadWatchdogs();
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) {}
 }
 
 async function deleteWatchdog(id) {
   if (!confirm("Xác nhận xóa mục theo dõi này?")) return;
+  let list = getLocalWatchdogs();
+  list = list.filter(w => w.id !== id);
+  saveLocalWatchdogs(list);
+  renderWatchdogs(list);
+
   try {
     await fetch(`/api/watchdogs/${id}`, { method: "DELETE" });
-    loadWatchdogs();
+  } catch (err) {}
+}
+
+async function triggerManualScan() {
+  const btn = document.getElementById("manual-scan-btn");
+  const originalHtml = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Đang quét...</span>`;
+    lucide.createIcons();
+  }
+
+  const list = getLocalWatchdogs();
+  try {
+    const res = await fetch("/api/watchdogs/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ watchdogs: list })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`Đã quét xong ${data.scannedCount} mục! Đã gửi ${data.alertsSent} thông báo mới đến Telegram.`);
+      loadWatchdogs();
+    } else {
+      alert("Lỗi khi quét: " + (data.error || "Không thể hoàn thành"));
+    }
   } catch (err) {
-    console.error(err);
+    alert("Lỗi kết nối máy chủ quét: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+      lucide.createIcons();
+    }
   }
 }
 

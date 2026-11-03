@@ -8,7 +8,7 @@ const DATA_DIR = path.join(__dirname, "../../data");
 const DAILY_PRICES_FILE = path.join(DATA_DIR, "daily-prices.json");
 
 // Bảng dữ liệu giá thị trường chuẩn xác của linh kiện & thiết bị cũ / mới tại Việt Nam
-const DEFAULT_HARDWARE_PRICES = [
+export const DEFAULT_HARDWARE_PRICES = [
   // === 1. CARD ĐỒ HỌA (GPU) ===
   {
     id: "gpu-rtx3060-12g",
