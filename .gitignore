@@ -5,3 +5,4 @@ Thumbs.db
 .env
 data/watchdogs.json
 cloudflared.exe
+Push-To-Github.bat
