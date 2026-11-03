@@ -1,12 +1,14 @@
 /**
  * Nhật Tảo Scraper Adapter
- * Diễn đàn công nghệ và mua bán đồ cũ lâu đời tại Việt Nam
+ * Diễn đàn công nghệ và mua bán đồ cũ uy tín tại Việt Nam
+ * Hỗ trợ bóc tách giá đa nguồn: thẻ HTML, thuộc tính data-price, tiêu đề và nội dung bài viết
  */
 
 export async function searchNhatTao(query = "", options = {}) {
   const cleanQ = (query || "").trim();
+  // Bỏ &type=post để tìm kiếm cả chủ đề rao vặt (classified threads) có chứa trường giá
   const url = cleanQ
-    ? `https://nhattao.com/search/search?keywords=${encodeURIComponent(cleanQ)}&type=post`
+    ? `https://nhattao.com/search/search?keywords=${encodeURIComponent(cleanQ)}`
     : `https://nhattao.com/?tab=recent`;
 
   try {
@@ -46,34 +48,59 @@ function parseNhatTaoHtml(html, query = "") {
     const relUrl = titleMatch[1];
     const title = titleMatch[2].replace(/<[^>]+>/g, '').trim();
 
-    // 1. Thử bóc tách giá từ thẻ HTML chuyên dụng nếu có
+    // Lấy snippet mô tả
+    const snippetMatch = /<blockquote[^>]*class="snippet"[^>]*>([\s\S]*?)<\/blockquote>/i.exec(block);
+    const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : "";
+
+    // === BÓC TÁCH GIÁ BÁN TOÀN DIỆN ===
     let price = 0;
-    const priceMatch = /class="price"[^>]*>([\s\S]*?)<\/span>/i.exec(block);
-    if (priceMatch) {
-      const priceStr = priceMatch[1].replace(/[^\d]/g, '');
-      price = parseInt(priceStr, 10) || 0;
+
+    // 1. Quét các thẻ HTML chứa class liên quan tới giá tiền trên Nhật Tảo (price, itemPrice, nhattao-price,...)
+    const priceHtmlMatch = /<(?:span|div|b|strong|p)[^>]*class="[^"]*(?:price|itemPrice|threadPrice|nhattao-price|nhattao_item_price|cost|gia)[^"]*"[^>]*>([\s\S]*?)<\/(?:span|div|b|strong|p)>/i.exec(block);
+    if (priceHtmlMatch) {
+      const cleanDigits = priceHtmlMatch[1].replace(/[^\d]/g, '');
+      if (cleanDigits) price = parseInt(cleanDigits, 10) || 0;
     }
 
-    // 2. Nếu không có giá trong thẻ riêng, bóc tách giá thông minh từ tiêu đề (ví dụ: 16.800k, 4tr2, 3.5tr)
+    // 2. Kiểm tra thuộc tính data-price
+    if (!price || price === 0) {
+      const dataPriceMatch = /data-price="([^"]+)"/i.exec(block);
+      if (dataPriceMatch) {
+        const cleanDigits = dataPriceMatch[1].replace(/[^\d]/g, '');
+        if (cleanDigits) price = parseInt(cleanDigits, 10) || 0;
+      }
+    }
+
+    // 3. Nếu chưa có giá, trích xuất thông minh từ tiêu đề
     if (!price || price === 0) {
       price = extractPriceFromText(title);
     }
 
-    // Lấy snippet mô tả
-    const snippetMatch = /<blockquote[^>]*class="snippet"[^>]*>([\s\S]*?)<\/blockquote>/i.exec(block);
-    const snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim() : "Tin rao trên diễn đàn Nhật Tảo.";
+    // 4. Nếu tiêu đề không có giá, quét trích xuất giá từ đoạn trích mô tả (snippet)
+    if (!price || price === 0) {
+      price = extractPriceFromText(snippet);
+    }
+
+    // 5. Nếu vẫn chưa có, quét toàn bộ văn bản của khối (bao gồm các span/meta)
+    if (!price || price === 0) {
+      const blockCleanText = block.replace(/<[^>]+>/g, ' ');
+      const priceContextMatch = /(?:giá|gia|bán\s*giá|pass\s*giá|tl\s*giá|mức\s*giá)[\s:]*([0-9\.,]+(?:\s*(?:k|tr|triệu|đ|vnd|củ|m|đồng))?)/i.exec(blockCleanText);
+      if (priceContextMatch) {
+        price = extractPriceFromText(priceContextMatch[1]) || extractPriceFromText(priceContextMatch[0]);
+      }
+    }
 
     // Lấy tác giả người đăng
     const authorMatch = /data-author="([^"]*)"/i.exec(block) || /class="username"[^>]*>([^<]*)</i.exec(block);
     const sellerName = authorMatch ? authorMatch[1].trim() : "Thành viên Nhật Tảo";
 
-    // Lấy ảnh & làm sạch URL tránh bị vỡ/403
+    // Lấy ảnh & làm sạch URL
     const imgMatch = /<img[^>]*src="([^"]*)"/i.exec(block);
     const rawImg = imgMatch ? imgMatch[1] : null;
     const image = cleanNhatTaoImageUrl(rawImg);
 
-    // Phân tích khu vực từ tiêu đề
-    const location = extractLocationFromText(title);
+    // Phân tích khu vực
+    const location = extractLocationFromText(title + " " + snippet);
 
     results.push({
       id: `nt-${Math.random().toString(36).substring(7)}`,
@@ -81,7 +108,7 @@ function parseNhatTaoHtml(html, query = "") {
       price: price || 0,
       source: "Nhật Tảo",
       sourceBadge: "nhattao",
-      url: relUrl.startsWith("http") ? relUrl : `https://nhattao.com/${relUrl}`,
+      url: relUrl.startsWith("http") ? relUrl : `https://nhattao.com/${relUrl.replace(/^\//, '')}`,
       image,
       location,
       postedTime: Date.now() - 1000 * 60 * (30 + Math.floor(Math.random() * 180)),
@@ -89,7 +116,7 @@ function parseNhatTaoHtml(html, query = "") {
       isShop: false,
       category: guessCategory(title),
       condition: "Đã qua sử dụng",
-      description: snippet
+      description: snippet || "Tin rao trên diễn đàn công nghệ Nhật Tảo."
     });
 
     if (results.length >= 20) break;
@@ -99,11 +126,38 @@ function parseNhatTaoHtml(html, query = "") {
 }
 
 /**
- * Trích xuất giá tiền thông minh từ tiêu đề
+ * Trích xuất giá tiền thông minh từ mọi định dạng tiếng Việt:
+ * VD: 16.800k, 4tr5, 4.5tr, 4 triệu 5, 4 củ, 4m5, 4.500.000đ
  */
-function extractPriceFromText(text) {
+function extractPriceFromText(text = "") {
+  if (!text) return 0;
   const t = text.toLowerCase();
-  
+
+  // Dạng "4tr5", "4 củ 5", "4m5" (4 triệu 500 nghìn)
+  const splitUnitMatch = /(\d+)\s*(?:tr|triệu|trieu|củ|cu|m)\s*(\d+)/i.exec(t);
+  if (splitUnitMatch) {
+    const main = parseInt(splitUnitMatch[1], 10);
+    const sub = parseInt(splitUnitMatch[2], 10);
+    if (main > 0) {
+      const subMultiplier = sub < 10 ? 100000 : (sub < 100 ? 10000 : 1000);
+      return main * 1000000 + sub * subMultiplier;
+    }
+  }
+
+  // Dạng "4.5tr", "4.5 triệu", "4.5 củ", "4.5m", "4,5tr"
+  const trDecimalMatch = /(\d+[\.,]\d+)\s*(?:tr|triệu|trieu|củ|cu|m|dong|đồng)\b/i.exec(t);
+  if (trDecimalMatch) {
+    const val = parseFloat(trDecimalMatch[1].replace(',', '.'));
+    if (val > 0) return Math.round(val * 1000000);
+  }
+
+  // Dạng "4tr", "4 triệu", "4 củ", "4m"
+  const trSingleMatch = /(\d+)\s*(?:tr|triệu|trieu|củ|cu|m)\b/i.exec(t);
+  if (trSingleMatch) {
+    const val = parseInt(trSingleMatch[1], 10);
+    if (val > 0 && val < 500) return val * 1000000;
+  }
+
   // Dạng "16.800k", "4500k", "500k"
   const kMatch = /(\d{1,3}(?:[\.,]\d{3})*|\d+)\s*k\b/i.exec(t);
   if (kMatch) {
@@ -112,25 +166,18 @@ function extractPriceFromText(text) {
     if (val > 0) return val * 1000;
   }
 
-  // Dạng "4tr5", "4.5tr", "4tr", "4.2tr", "4 triệu"
-  const trMatch = /(\d+[\.,]?\d*)\s*(tr|triệu)/i.exec(t);
-  if (trMatch) {
-    const val = parseFloat(trMatch[1].replace(',', '.'));
-    if (val > 0) return Math.round(val * 1000000);
-  }
-
-  // Dạng "4.500.000" hoặc "4,500,000"
-  const fullMatch = /(\d{1,3}(?:[\.,]\d{3})+)\s*(?:đ|vnd)?/i.exec(t);
+  // Dạng đầy đủ "4.500.000", "4,500,000", "4500000đ"
+  const fullMatch = /(\d{1,3}(?:[\.,]\d{3})+)\s*(?:đ|vnd|dong)?/i.exec(t);
   if (fullMatch) {
     const clean = fullMatch[1].replace(/[\.,]/g, '');
     const val = parseInt(clean, 10);
-    if (val > 0) return val;
+    if (val >= 10000) return val;
   }
 
   return 0;
 }
 
-function extractLocationFromText(text) {
+function extractLocationFromText(text = "") {
   const t = text.toLowerCase();
   if (t.includes("[hn]") || t.includes("hà nội") || t.includes("hn/")) return "Hà Nội";
   if (t.includes("[sg]") || t.includes("[hcm]") || t.includes("hồ chí minh") || t.includes("sài gòn")) return "TP.HCM";

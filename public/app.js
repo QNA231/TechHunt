@@ -1,4 +1,6 @@
-// Tech Deal Hunter - Frontend Script (Hiện Đại, Hỗ Trợ Slider, Dấu X Xóa Nhanh & Đổi Theme)
+// TechHunter - Giao diện hiện đại theo triết lý Kokonut Ui & Hoạt họa Anime.js
+// Đặc trưng: Bento grid, thẻ xúc giác (tactile cards), số đếm nhảy mượt mà (numeric counter),
+// xuất hiện phân tầng (staggered list reveal) và phím tắt thông minh.
 
 let currentResults = [];
 let currentStats = null;
@@ -7,17 +9,104 @@ let searchDebounceTimer = null;
 let lastScrollY = 0;
 let scrollUpAccumulator = 0;
 
-// Khởi chạy khi DOM sẵn sàng
+// === KHỞI CHẠY KHI DOM SẴN SÀNG ===
+
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   initSearchHistory();
   initFabScrollListener();
+  initGlobalKeyboardShortcuts();
   lucide.createIcons();
   
-  // Tải danh sách sản phẩm ban đầu mà không điền sẵn chữ vào ô input
-  performSearch("");
+  // Đồng bộ trạng thái giao diện ban đầu của các nút khoảng giá (< 5tr)
+  updatePricePresetButtons(5000000);
+
+  // Mở tab Giá hàng ngày làm trang mặc định
+  switchTab("prices");
   loadWatchdogs();
 });
+
+// === HOẠT HỌA VI MÔ VỚI ANIME.JS (KOKONUT UI ANIMATION HELPERS) ===
+
+// 1. Hiệu ứng số đếm tăng dần (Numeric counting animation)
+function animateNumericValue(element, targetValue, duration = 380, formatType = "vnd") {
+  if (!element) return;
+  const num = Number(targetValue) || 0;
+
+  // Nếu không có thư viện anime hoặc giá trị bằng 0
+  if (typeof anime === "undefined") {
+    element.textContent = formatType === "vnd" ? formatVND(num) : (formatType === "count" ? `${num} món` : num);
+    return;
+  }
+
+  const counter = { val: 0 };
+  anime({
+    targets: counter,
+    val: num,
+    round: 1,
+    duration: duration,
+    easing: "easeOutExpo",
+    update: () => {
+      if (formatType === "vnd") {
+        element.textContent = formatVND(counter.val);
+      } else if (formatType === "count") {
+        element.textContent = `${Math.round(counter.val)} món`;
+      } else {
+        element.textContent = Math.round(counter.val);
+      }
+    }
+  });
+}
+
+// 2. Hiệu ứng xuất hiện phân tầng danh sách thẻ (Staggered list reveal)
+function animateStaggerElements(containerSelector, itemSelector) {
+  if (typeof anime === "undefined") return;
+  const items = document.querySelectorAll(`${containerSelector} ${itemSelector}`);
+  if (!items || items.length === 0) return;
+
+  anime.set(items, { opacity: 0, translateY: 10 });
+  anime({
+    targets: items,
+    opacity: [0, 1],
+    translateY: [10, 0],
+    delay: anime.stagger(28),
+    duration: 260,
+    easing: "easeOutQuad"
+  });
+}
+
+// 3. Phím tắt toàn cục thông minh (Ctrl + K hoặc / để focus tìm kiếm)
+function initGlobalKeyboardShortcuts() {
+  window.addEventListener("keydown", (e) => {
+    // Ctrl + K hoặc Cmd + K
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      focusActiveSearchInput();
+    }
+    // Phím '/' khi không gõ vào ô nhập liệu
+    if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      focusActiveSearchInput();
+    }
+  });
+}
+
+function focusActiveSearchInput() {
+  const viewPrices = document.getElementById("view-prices");
+  if (viewPrices && !viewPrices.classList.contains("hidden")) {
+    const input = document.getElementById("daily-price-search");
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  } else {
+    const input = document.getElementById("search-input");
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }
+}
 
 // === QUẢN LÝ SIDEBAR THÒ THỤT TRÊN MOBILE (OFF-CANVAS DRAWER) ===
 
@@ -55,6 +144,16 @@ function toggleTheme() {
   const nextTheme = isDark ? "light" : "dark";
   applyTheme(nextTheme);
   localStorage.setItem("tdh-theme", nextTheme);
+
+  // Hiệu ứng xoay icon vi mô khi bấm đổi theme
+  if (typeof anime !== "undefined") {
+    anime({
+      targets: "#theme-icon",
+      rotate: [0, 360],
+      duration: 350,
+      easing: "easeOutQuad"
+    });
+  }
 }
 
 function applyTheme(theme) {
@@ -94,19 +193,17 @@ function clearInput(inputId, btn) {
   if (btn) btn.classList.add("hidden");
   input.focus();
 
-  // Nếu là ô tìm kiếm chính thì tự động quét lại
   if (inputId === "search-input") {
     performSearch("");
   }
 }
 
-// Xử lý khi gõ ô tìm kiếm: Tự động tìm kiếm tức thì với debounce 350ms
 function handleSearchInput(input) {
   toggleClearBtn(input, 'search-clear-btn');
   clearTimeout(searchDebounceTimer);
   searchDebounceTimer = setTimeout(() => {
     performSearch(input.value.trim());
-  }, 350);
+  }, 320);
 }
 
 // === QUẢN LÝ LỊCH SỬ TÌM KIẾM (SEARCH HISTORY) ===
@@ -166,7 +263,7 @@ function renderSearchHistory() {
 
   const history = getSearchHistory();
   if (history.length === 0) {
-    container.innerHTML = `<span class="text-[11px] text-slate-400 italic">Chưa có lịch sử tìm kiếm</span>`;
+    container.innerHTML = `<span class="text-[11px] text-neutral-400 italic">Chưa có lịch sử tìm kiếm</span>`;
     if (clearBtn) clearBtn.classList.add("hidden");
     return;
   }
@@ -176,14 +273,14 @@ function renderSearchHistory() {
 
   history.forEach(kw => {
     const chip = document.createElement("div");
-    chip.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer text-xs font-medium group select-none";
+    chip.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-700 dark:text-neutral-300 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer text-xs font-medium group select-none tactile-card";
     chip.onclick = () => setQuery(kw);
 
     chip.innerHTML = `
       <span class="truncate max-w-[120px]">${escapeHtml(kw)}</span>
       <button 
         type="button" 
-        class="text-slate-400 hover:text-rose-500 rounded p-0.5 transition" 
+        class="text-neutral-400 hover:text-rose-500 rounded p-0.5 transition" 
         title="Xóa mục này"
         onclick="event.stopPropagation(); removeSearchHistoryItem('${escapeHtml(kw)}')"
       >
@@ -197,7 +294,6 @@ function renderSearchHistory() {
 }
 
 // === QUẢN LÝ NÚT BỘ LỌC NỔI (FAB) TRÊN MOBILE ===
-// Ẩn khi ở trên cùng (vì đã có nút Lọc ở toolbar), ẩn khi lướt xuống, hiện khi lướt lên
 
 function initFabScrollListener() {
   const fab = document.getElementById("mobile-filter-fab");
@@ -207,7 +303,6 @@ function initFabScrollListener() {
     const currentScrollY = window.scrollY || window.pageYOffset;
     const delta = currentScrollY - lastScrollY;
 
-    // 1. Khi ở gần trên cùng (<= 100px): Luôn ẩn vì toolbar trên cùng đã có sẵn nút Lọc
     if (currentScrollY <= 100) {
       fab.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
       fab.classList.remove("translate-y-0", "opacity-100");
@@ -216,14 +311,11 @@ function initFabScrollListener() {
       return;
     }
 
-    // 2. Khi lướt xuống: Luôn ẩn nút để không che nội dung đang đọc
     if (delta > 3) {
       fab.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
       fab.classList.remove("translate-y-0", "opacity-100");
       scrollUpAccumulator = 0;
-    }
-    // 3. Khi lướt lên một đoạn nhỏ (khoảng cách > 12px): Hiện nút nổi tiện lợi
-    else if (delta < -3) {
+    } else if (delta < -3) {
       scrollUpAccumulator += Math.abs(delta);
       if (scrollUpAccumulator > 12) {
         fab.classList.remove("translate-y-24", "opacity-0", "pointer-events-none");
@@ -235,36 +327,72 @@ function initFabScrollListener() {
   }, { passive: true });
 }
 
-// === THANH TRƯỢT KHOẢNG GIÁ (PRICE RANGE SLIDER) ===
+// === THANH TRƯỢT KHOẢNG GIÁ & ĐỒNG BỘ CÁC NÚT PRESET ===
 
-function handleSliderChange(val) {
+const PRESET_ACTIVE_CLASS = "py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-center border border-blue-600 dark:border-blue-500 shadow-xs";
+const PRESET_INACTIVE_CLASS = "py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700";
+
+function updatePricePresetButtons(priceNum) {
+  const num = Number(priceNum) || 0;
+  const presets = [
+    { id: "preset-btn-0", val: 0 },
+    { id: "preset-btn-5tr", val: 5000000 },
+    { id: "preset-btn-12tr", val: 12000000 },
+    { id: "preset-btn-20tr", val: 20000000 }
+  ];
+
+  let targetId = null;
+  if (num === 0 || num >= 30000000) {
+    targetId = "preset-btn-0";
+  } else if (num === 5000000) {
+    targetId = "preset-btn-5tr";
+  } else if (num === 12000000) {
+    targetId = "preset-btn-12tr";
+  } else if (num === 20000000) {
+    targetId = "preset-btn-20tr";
+  }
+
+  presets.forEach(p => {
+    const btn = document.getElementById(p.id);
+    if (!btn) return;
+    btn.className = (p.id === targetId) ? PRESET_ACTIVE_CLASS : PRESET_INACTIVE_CLASS;
+  });
+}
+
+function handleSliderChange(val, skipSearch = false) {
   const label = document.getElementById("slider-price-label");
   const hiddenInput = document.getElementById("filter-max-price");
   const num = Number(val);
 
-  if (num >= 30000000) {
-    label.textContent = "Tất cả giá";
-    hiddenInput.value = "";
+  if (num >= 30000000 || num === 0) {
+    if (label) label.textContent = "Tất cả giá";
+    if (hiddenInput) hiddenInput.value = "";
   } else {
-    label.textContent = `≤ ${formatVND(num)}`;
-    hiddenInput.value = num;
+    if (label) label.textContent = `≤ ${formatVND(num)}`;
+    if (hiddenInput) hiddenInput.value = num;
   }
 
-  // Debounce tìm kiếm khi kéo slider
-  clearTimeout(searchDebounceTimer);
-  searchDebounceTimer = setTimeout(() => {
-    performSearch(document.getElementById("search-input").value);
-  }, 250);
+  updatePricePresetButtons(num);
+
+  if (!skipSearch) {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      performSearch(document.getElementById("search-input").value);
+    }, 250);
+  }
 }
 
-function setPricePreset(val) {
+function setPricePreset(val, skipSearch = false) {
   const slider = document.getElementById("price-range-slider");
-  if (val === 0) {
+  const num = Number(val);
+  if (!slider) return;
+
+  if (num === 0 || num >= 30000000) {
     slider.value = 30000000;
-    handleSliderChange(30000000);
+    handleSliderChange(30000000, skipSearch);
   } else {
-    slider.value = val;
-    handleSliderChange(val);
+    slider.value = num;
+    handleSliderChange(num, skipSearch);
   }
 }
 
@@ -273,14 +401,13 @@ function setPricePreset(val) {
 function selectCategory(cat) {
   document.getElementById("filter-category").value = cat;
 
-  // Cập nhật giao diện nút active
   const pills = document.querySelectorAll(".cat-pill");
   pills.forEach(p => {
     const pCat = p.getAttribute("data-cat");
     if (pCat === cat) {
       p.className = "cat-pill active p-3 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-2 shadow-xs";
     } else {
-      p.className = "cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs";
+      p.className = "cat-pill p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-left flex items-center gap-2 shadow-xs";
     }
   });
 
@@ -303,7 +430,7 @@ function selectSource(src) {
         label.textContent = nameSpan ? nameSpan.textContent : src;
       }
     } else {
-      p.className = "source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5";
+      p.className = "source-pill py-2 px-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-left flex items-center gap-1.5";
     }
   });
 
@@ -314,62 +441,97 @@ function selectSource(src) {
 
 function resetFilters() {
   const searchInput = document.getElementById("search-input");
-  searchInput.value = "";
-  toggleClearBtn(searchInput, "search-clear-btn");
+  if (searchInput) {
+    searchInput.value = "";
+    toggleClearBtn(searchInput, "search-clear-btn");
+  }
 
   selectCategory("all");
   selectSource("all");
-  setPricePreset(0);
+  setPricePreset(5000000, true);
 
   document.getElementById("filter-region").value = "all";
   document.getElementById("filter-hide-scam").checked = true;
   document.getElementById("filter-user-only").checked = false;
   document.getElementById("filter-sort").value = "deal";
 
+  clearTimeout(searchDebounceTimer);
   performSearch("");
 }
 
-// === ĐIỀU HƯỚNG TAB ===
+// === ĐIỀU HƯỚNG TAB KÈM HOẠT HỌA CHUYỂN CẢNH ===
 
 function switchTab(tab) {
   const viewSearch = document.getElementById("view-search");
   const viewWatchdog = document.getElementById("view-watchdog");
   const viewVerify = document.getElementById("view-verify");
+  const viewPrices = document.getElementById("view-prices");
   const tabSearchBtn = document.getElementById("tab-search-btn");
   const tabWatchdogBtn = document.getElementById("tab-watchdog-btn");
   const tabVerifyBtn = document.getElementById("tab-verify-btn");
+  const tabPricesBtn = document.getElementById("tab-prices-btn");
   const mobileFab = document.getElementById("mobile-filter-fab");
 
   viewSearch.classList.add("hidden");
   viewWatchdog.classList.add("hidden");
   viewVerify.classList.add("hidden");
+  if (viewPrices) viewPrices.classList.add("hidden");
   closeMobileFilter();
 
-  const normalClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium";
-  const activeClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold";
+  const normalClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium";
+  const activeClass = "px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all flex items-center space-x-1.5 shrink-0 bg-white dark:bg-neutral-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold";
 
   tabSearchBtn.className = normalClass;
   tabWatchdogBtn.className = normalClass;
   tabVerifyBtn.className = normalClass;
+  if (tabPricesBtn) tabPricesBtn.className = normalClass;
 
-  if (tab === "search") {
+  let activeView = null;
+
+  if (tab === "prices") {
+    if (viewPrices) {
+      viewPrices.classList.remove("hidden");
+      activeView = viewPrices;
+    }
+    if (tabPricesBtn) tabPricesBtn.className = activeClass;
+    if (mobileFab) mobileFab.classList.add("hidden");
+    loadDailyPrices();
+  } else if (tab === "search") {
     viewSearch.classList.remove("hidden");
+    activeView = viewSearch;
     tabSearchBtn.className = activeClass;
     if (mobileFab) mobileFab.classList.remove("hidden");
+    if (currentResults.length === 0) {
+      performSearch(document.getElementById("search-input")?.value || "");
+    }
   } else if (tab === "verify") {
     viewVerify.classList.remove("hidden");
+    activeView = viewVerify;
     tabVerifyBtn.className = activeClass;
     if (mobileFab) mobileFab.classList.add("hidden");
   } else if (tab === "watchdog") {
     viewWatchdog.classList.remove("hidden");
+    activeView = viewWatchdog;
     tabWatchdogBtn.className = activeClass;
     if (mobileFab) mobileFab.classList.add("hidden");
     loadWatchdogs();
   }
+
+  // Chuyển cảnh mượt mà bằng Anime.js
+  if (activeView && typeof anime !== "undefined") {
+    anime.set(activeView, { opacity: 0, translateY: 6 });
+    anime({
+      targets: activeView,
+      opacity: [0, 1],
+      translateY: [6, 0],
+      duration: 220,
+      easing: "easeOutQuad"
+    });
+  }
+
   lucide.createIcons();
 }
 
-// Bấm nhanh gợi ý
 function setQuery(q) {
   const input = document.getElementById("search-input");
   input.value = q;
@@ -386,7 +548,6 @@ function handleSearch(e) {
 // === GỌI API TÌM KIẾM TỔNG HỢP ===
 
 async function performSearch(query) {
-  // Tự động lưu vào lịch sử tìm kiếm nếu có từ khóa
   if (query && query.trim().length > 0) {
     addSearchHistory(query.trim());
   }
@@ -439,17 +600,12 @@ async function performSearch(query) {
       return;
     }
 
-    // Hiển thị banner thống kê giá thị trường
     renderStats(query, data.stats);
-
-    // Tải và hiển thị danh sách tìm kiếm nhóm Facebook
     loadFacebookGroups(query, category);
 
-    // Cập nhật thông số toolbar
     document.getElementById("results-count").textContent = currentResults.length;
     document.getElementById("results-time").textContent = data.durationMs || 100;
 
-    // Render danh sách sản phẩm
     renderResults(currentResults);
 
   } catch (err) {
@@ -458,7 +614,7 @@ async function performSearch(query) {
   }
 }
 
-// Tải danh sách nhóm Facebook có sẵn bộ lọc bài đăng mới nhất
+// Tải danh sách nhóm Facebook
 async function loadFacebookGroups(query = "", category = "all") {
   const container = document.getElementById("fb-groups-list");
   if (!container) return;
@@ -480,7 +636,7 @@ async function loadFacebookGroups(query = "", category = "all") {
       a.href = g.searchUrl;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.className = "inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 text-slate-800 dark:text-slate-200 font-semibold transition shadow-2xs group text-xs";
+      a.className = "inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 text-neutral-800 dark:text-neutral-200 font-semibold transition shadow-2xs group text-xs tactile-card";
       
       const countClean = (g.members || '').replace(/[\.\,\+]/g, '').trim();
       const num = parseInt(countClean, 10);
@@ -489,8 +645,8 @@ async function loadFacebookGroups(query = "", category = "all") {
       a.innerHTML = `
         <span class="text-blue-600 dark:text-blue-400 font-bold">#</span>
         <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">${escapeHtml(g.name)}</span>
-        <span class="text-[10px] text-slate-400 font-normal">(${escapeHtml(memberLabel)})</span>
-        <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition"></i>
+        <span class="text-[10px] text-neutral-400 font-normal">(${escapeHtml(memberLabel)})</span>
+        <i data-lucide="external-link" class="w-3 h-3 text-neutral-400 group-hover:text-blue-600 transition"></i>
       `;
 
       container.appendChild(a);
@@ -509,8 +665,8 @@ function setViewMode(mode) {
   const gridBtn = document.getElementById("view-mode-grid");
   const listBtn = document.getElementById("view-mode-list");
 
-  const activeBtnClass = "p-1.5 rounded-md text-blue-600 bg-white dark:bg-slate-900 shadow-xs";
-  const inactiveBtnClass = "p-1.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+  const activeBtnClass = "p-1.5 rounded-md text-blue-600 bg-white dark:bg-neutral-900 shadow-xs";
+  const inactiveBtnClass = "p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200";
 
   if (mode === "grid") {
     gridBtn.className = activeBtnClass;
@@ -523,7 +679,6 @@ function setViewMode(mode) {
   renderResults(currentResults);
 }
 
-// Sắp xếp lại
 function applySorting() {
   const sortBy = document.getElementById("filter-sort").value;
   if (!currentResults || currentResults.length === 0) return;
@@ -545,7 +700,7 @@ function applySorting() {
   renderResults(currentResults);
 }
 
-// Render banner thống kê khoảng giá
+// Render banner thống kê khoảng giá với hiệu ứng Anime.js Numeric Counting
 function renderStats(query, stats) {
   const banner = document.getElementById("stats-banner");
   if (!stats || stats.total === 0) {
@@ -555,10 +710,12 @@ function renderStats(query, stats) {
 
   banner.classList.remove("hidden");
   document.getElementById("stat-query-name").textContent = query ? `cho "${query}"` : "";
-  document.getElementById("stat-min-price").textContent = formatVND(stats.minPrice);
-  document.getElementById("stat-median-price").textContent = formatVND(stats.medianPrice);
-  document.getElementById("stat-max-price").textContent = formatVND(stats.maxPrice);
-  document.getElementById("stat-deal-count").textContent = `${stats.superDealCount} món`;
+
+  // Hiệu ứng số nhảy mượt mà
+  animateNumericValue(document.getElementById("stat-min-price"), stats.minPrice, 320, "vnd");
+  animateNumericValue(document.getElementById("stat-median-price"), stats.medianPrice, 360, "vnd");
+  animateNumericValue(document.getElementById("stat-max-price"), stats.maxPrice, 400, "vnd");
+  animateNumericValue(document.getElementById("stat-deal-count"), stats.superDealCount, 300, "count");
 }
 
 // === RENDER THẺ SẢN PHẨM (HỖ TRỢ CẢ GRID VÀ LIST) ===
@@ -574,19 +731,15 @@ function renderResults(items) {
   }
 
   items.forEach(item => {
-    // Nhãn nguồn - Màu tương phản rõ ràng, sắc nét không bị mờ
-    let sourceBadgeClass = "bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:text-amber-200 border-amber-300 dark:border-amber-700";
-    if (item.sourceBadge === "voz") sourceBadgeClass = "bg-blue-100 text-blue-900 dark:bg-blue-950/70 dark:text-blue-200 border-blue-300 dark:border-blue-700";
-    if (item.sourceBadge === "nhattao") sourceBadgeClass = "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700";
-    if (item.sourceBadge === "cellphones") sourceBadgeClass = "bg-rose-100 text-rose-900 dark:bg-rose-950/70 dark:text-rose-200 border-rose-300 dark:border-rose-700";
-    if (item.sourceBadge === "tgdd") sourceBadgeClass = "bg-yellow-100 text-yellow-900 dark:bg-yellow-950/70 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700";
-    if (item.sourceBadge === "hoangha") sourceBadgeClass = "bg-purple-100 text-purple-900 dark:bg-purple-950/70 dark:text-purple-200 border-purple-300 dark:border-purple-700";
-    if (item.sourceBadge === "fpt") sourceBadgeClass = "bg-orange-100 text-orange-900 dark:bg-orange-950/70 dark:text-orange-200 border-orange-300 dark:border-orange-700";
-    if (item.sourceBadge === "laptop88") sourceBadgeClass = "bg-teal-100 text-teal-900 dark:bg-teal-950/70 dark:text-teal-200 border-teal-300 dark:border-teal-700";
-    if (item.sourceBadge === "pcpart") sourceBadgeClass = "bg-cyan-100 text-cyan-900 dark:bg-cyan-950/70 dark:text-cyan-200 border-cyan-300 dark:border-cyan-700";
-    if (item.sourceBadge === "retail") sourceBadgeClass = "bg-rose-100 text-rose-900 dark:bg-rose-950/70 dark:text-rose-200 border-rose-300 dark:border-rose-700";
+    let sourceBadgeClass = "bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-amber-300 dark:border-amber-700/80";
+    if (item.sourceBadge === "nhattao") sourceBadgeClass = "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700/80";
+    if (item.sourceBadge === "cellphones") sourceBadgeClass = "bg-rose-50 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200 border-rose-300 dark:border-rose-700/80";
+    if (item.sourceBadge === "tgdd") sourceBadgeClass = "bg-yellow-50 text-yellow-900 dark:bg-yellow-950/60 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700/80";
+    if (item.sourceBadge === "hoangha") sourceBadgeClass = "bg-purple-50 text-purple-900 dark:bg-purple-950/60 dark:text-purple-200 border-purple-300 dark:border-purple-700/80";
+    if (item.sourceBadge === "fpt") sourceBadgeClass = "bg-orange-50 text-orange-900 dark:bg-orange-950/60 dark:text-orange-200 border-orange-300 dark:border-orange-700/80";
+    if (item.sourceBadge === "laptop88") sourceBadgeClass = "bg-teal-50 text-teal-900 dark:bg-teal-950/60 dark:text-teal-200 border-teal-300 dark:border-teal-700/80";
+    if (item.sourceBadge === "pcpart") sourceBadgeClass = "bg-cyan-50 text-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200 border-cyan-300 dark:border-cyan-700/80";
 
-    // Nhãn đánh giá giá hời
     let ratingBadge = '';
     if (item.dealRating && item.dealRating.level === "super_deal") {
       ratingBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 shrink-0">🔥 Kèo rất hời</span>`;
@@ -594,7 +747,6 @@ function renderResults(items) {
       ratingBadge = `<span class="px-2 py-0.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 shrink-0">✨ Giá tốt</span>`;
     }
 
-    // Huy hiệu IMEI / Serial
     let hardwareBadge = '';
     if (item.hardwareVerifications && item.hardwareVerifications.length > 0) {
       const hv = item.hardwareVerifications[0];
@@ -624,8 +776,7 @@ function renderResults(items) {
     const card = document.createElement("div");
 
     if (currentViewMode === "list") {
-      // DẠNG DANH SÁCH (LIST VIEW)
-      card.className = "deal-card bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0";
+      card.className = "deal-card bento-box tactile-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0";
       card.innerHTML = `
         <div class="flex items-center space-x-3.5 min-w-0 flex-1">
           <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="shrink-0 block">
@@ -633,7 +784,7 @@ function renderResults(items) {
               src="${item.image}" 
               alt="${escapeHtml(item.title)}" 
               referrerpolicy="no-referrer"
-              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:opacity-90 transition"
+              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:opacity-90 transition"
               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
             >
           </a>
@@ -641,10 +792,10 @@ function renderResults(items) {
             <div class="flex items-center gap-2 flex-wrap">
               <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${sourceBadgeClass}">${item.source}</span>
               ${ratingBadge}
-              <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(item.location || 'Toàn quốc')}</span>
-              <span class="text-[11px] text-slate-400">• ${timeAgo(item.postedTime)}</span>
+              <span class="text-[11px] text-neutral-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(item.location || 'Toàn quốc')}</span>
+              <span class="text-[11px] text-neutral-400">• ${timeAgo(item.postedTime)}</span>
             </div>
-            <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
+            <h4 class="font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 line-clamp-2 break-anywhere leading-snug">
               <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline-flex items-center gap-1.5 group" title="${escapeHtml(item.title)}">
                 <span>${escapeHtml(item.title)}</span>
                 <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 shrink-0 inline"></i>
@@ -654,20 +805,18 @@ function renderResults(items) {
           </div>
         </div>
 
-        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800">
           <div class="text-left sm:text-right">
             <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">${formatVND(item.price)}</div>
-            <span class="text-[11px] text-slate-400">${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}</span>
+            <span class="text-[11px] text-neutral-400">${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}</span>
           </div>
         </div>
       `;
     } else {
-      // DẠNG LƯỚI (GRID VIEW)
-      card.className = "deal-card bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between min-w-0 shadow-xs hover:shadow-md transition";
+      card.className = "deal-card bento-box tactile-card overflow-hidden flex flex-col justify-between min-w-0";
       card.innerHTML = `
         <div class="min-w-0 flex flex-col h-full">
-          <!-- Ảnh đại diện - Sạch sẽ không còn badge bị mờ che trên ảnh -->
-          <div class="relative h-44 w-full bg-slate-100 dark:bg-slate-900 overflow-hidden group shrink-0">
+          <div class="relative h-44 w-full bg-neutral-100 dark:bg-neutral-900 overflow-hidden group shrink-0">
             <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="block w-full h-full">
               <img 
                 src="${item.image}" 
@@ -678,24 +827,21 @@ function renderResults(items) {
               >
             </a>
             
-            <!-- Vị trí & Thời gian tinh gọn ở chân ảnh -->
-            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-200 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs border border-slate-200/60 dark:border-slate-800/60 pointer-events-none">
+            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-neutral-700 dark:text-neutral-200 bg-white/95 dark:bg-neutral-900/95 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs border border-neutral-200/60 dark:border-neutral-800/60 pointer-events-none">
               <span class="truncate min-w-0 flex items-center gap-1 font-medium">
-                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400 shrink-0"></i>
+                <i data-lucide="map-pin" class="w-3 h-3 text-neutral-400 shrink-0"></i>
                 <span class="truncate">${escapeHtml(item.location || 'Toàn quốc')}</span>
               </span>
-              <span class="shrink-0 flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium">
+              <span class="shrink-0 flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-medium">
                 <i data-lucide="clock" class="w-3 h-3 shrink-0"></i>
                 <span>${timeAgo(item.postedTime)}</span>
               </span>
             </div>
           </div>
 
-          <!-- Nội dung chi tiết nằm ở phần dưới, rõ ràng, độ tương phản cao -->
           <div class="p-4 space-y-3 min-w-0 flex-1 flex flex-col justify-between">
             <div class="space-y-2.5 min-w-0">
               
-              <!-- Badges nguồn & Deal - Đưa xuống đây để nét căng và không bị mờ -->
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold border ${sourceBadgeClass}">
                   ${item.source}
@@ -703,38 +849,36 @@ function renderResults(items) {
                 ${ratingBadge}
               </div>
 
-              <!-- Tiêu đề sản phẩm gắn link trực tiếp -->
-              <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
+              <h4 class="font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 line-clamp-2 break-anywhere leading-snug">
                 <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline group" title="${escapeHtml(item.title)}">
                   <span>${escapeHtml(item.title)}</span>
                   <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 inline ml-1 align-baseline shrink-0"></i>
                 </a>
               </h4>
 
-              <!-- Giá & Loại người bán -->
               <div class="flex items-baseline justify-between gap-1 min-w-0 pt-0.5">
                 <div class="min-w-0">
                   <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight truncate">
                     ${formatVND(item.price)}
                   </div>
-                  <div class="text-xs text-slate-400 truncate">
+                  <div class="text-xs text-neutral-400 truncate">
                     ${item.dealRating?.desc || "Mức giá hợp lý"}
                   </div>
                 </div>
                 
                 <div class="shrink-0">
-                  <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                  <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700/60">
                     ${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}
                   </span>
                 </div>
               </div>
 
-              <!-- Mô tả ngắn gọn -->
-              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 break-anywhere bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              <div class="bg-neutral-50 dark:bg-neutral-950/60 p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 min-h-[46px] flex items-center overflow-hidden">
+                <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed break-anywhere m-0">
                 ${escapeHtml(item.description || item.condition || "Đã qua sử dụng")}
-              </p>
+                </p>
+              </div>
 
-              <!-- Huy hiệu IMEI / Serial nếu có -->
               ${hardwareBadge}
 
             </div>
@@ -747,6 +891,9 @@ function renderResults(items) {
   });
 
   lucide.createIcons();
+
+  // Hiệu ứng xuất hiện phân tầng Anime.js
+  animateStaggerElements("#results-grid", ".deal-card");
 }
 
 // === THẨM ĐỊNH MÃ PHẦN CỨNG (IMEI / SERIAL) ===
@@ -774,7 +921,7 @@ async function handleVerifyCode() {
   }
 
   resultContainer.innerHTML = `
-    <div class="py-8 text-center text-slate-500 flex items-center justify-center space-x-2">
+    <div class="py-8 text-center text-neutral-500 flex items-center justify-center space-x-2">
       <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
       <span class="text-xs font-medium">Đang kiểm tra thuật toán Luhn & dải TAC quốc tế...</span>
     </div>
@@ -819,37 +966,37 @@ function renderVerifyReport(report) {
   let linksHtml = '';
   if (report.lookupLinks) {
     linksHtml = `
-      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Các trang tra cứu chính thức (Mở 1-Click):</span>
+      <div class="pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
+        <span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block">Các trang tra cứu chính thức (mở 1-click):</span>
         <div class="flex flex-wrap gap-2 text-xs">
           ${report.lookupLinks.appleCoverage ? `
-            <a href="${report.lookupLinks.appleCoverage}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+            <a href="${report.lookupLinks.appleCoverage}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium flex items-center gap-1.5 transition border border-neutral-200 dark:border-neutral-700 tactile-card">
               <span>Apple Check Coverage</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-400"></i>
             </a>
           ` : ''}
           ${report.lookupLinks.sickw ? `
-            <a href="${report.lookupLinks.sickw}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
-              <span>Kiểm tra iCloud Ẩn (Sickw)</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+            <a href="${report.lookupLinks.sickw}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium flex items-center gap-1.5 transition border border-neutral-200 dark:border-neutral-700 tactile-card">
+              <span>Kiểm tra iCloud ẩn (Sickw)</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-400"></i>
             </a>
           ` : ''}
           ${report.lookupLinks.imeiInfo ? `
-            <a href="${report.lookupLinks.imeiInfo}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+            <a href="${report.lookupLinks.imeiInfo}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium flex items-center gap-1.5 transition border border-neutral-200 dark:border-neutral-700 tactile-card">
               <span>Tra cứu GSMA (IMEI.info)</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-400"></i>
             </a>
           ` : ''}
           ${report.lookupLinks.dellSupport ? `
-            <a href="${report.lookupLinks.dellSupport}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+            <a href="${report.lookupLinks.dellSupport}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium flex items-center gap-1.5 transition border border-neutral-200 dark:border-neutral-700 tactile-card">
               <span>Dell Support</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-400"></i>
             </a>
           ` : ''}
           ${report.lookupLinks.lenovoSupport ? `
-            <a href="${report.lookupLinks.lenovoSupport}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+            <a href="${report.lookupLinks.lenovoSupport}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium flex items-center gap-1.5 transition border border-neutral-200 dark:border-neutral-700 tactile-card">
               <span>Lenovo Warranty</span>
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400"></i>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-400"></i>
             </a>
           ` : ''}
         </div>
@@ -861,26 +1008,26 @@ function renderVerifyReport(report) {
     <div class="space-y-4">
       ${statusBadge}
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-neutral-50 dark:bg-neutral-950 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
         <div class="min-w-0">
-          <span class="text-slate-500 dark:text-slate-400 block mb-0.5">Mã đã nhập:</span>
-          <span class="font-mono font-bold text-slate-900 dark:text-slate-100 text-sm break-anywhere">${escapeHtml(report.raw)}</span>
+          <span class="text-neutral-500 dark:text-neutral-400 block mb-0.5">Mã đã nhập:</span>
+          <span class="font-mono font-bold text-neutral-900 dark:text-neutral-100 text-sm break-anywhere">${escapeHtml(report.raw)}</span>
         </div>
         ${report.formatted ? `
           <div class="min-w-0">
-            <span class="text-slate-500 dark:text-slate-400 block mb-0.5">Định dạng tiêu chuẩn:</span>
+            <span class="text-neutral-500 dark:text-neutral-400 block mb-0.5">Định dạng tiêu chuẩn:</span>
             <span class="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm break-anywhere">${escapeHtml(report.formatted)}</span>
           </div>
         ` : ''}
         ${report.tac ? `
           <div class="min-w-0">
-            <span class="text-slate-500 dark:text-slate-400 block mb-0.5">Mã dải TAC (8 số đầu):</span>
-            <span class="font-mono font-medium text-slate-700 dark:text-slate-300">${escapeHtml(report.tac)}</span>
+            <span class="text-neutral-500 dark:text-neutral-400 block mb-0.5">Mã dải TAC (8 số đầu):</span>
+            <span class="font-mono font-medium text-neutral-700 dark:text-neutral-300">${escapeHtml(report.tac)}</span>
           </div>
         ` : ''}
         ${report.brandHint ? `
           <div class="min-w-0">
-            <span class="text-slate-500 dark:text-slate-400 block mb-0.5">Nhận diện thương hiệu & Xuất xứ:</span>
+            <span class="text-neutral-500 dark:text-neutral-400 block mb-0.5">Nhận diện thương hiệu & xuất xứ:</span>
             <span class="text-emerald-700 dark:text-emerald-400 font-bold truncate block">${escapeHtml(report.brandHint)}</span>
           </div>
         ` : ''}
@@ -922,7 +1069,7 @@ function renderWatchdogs(list) {
 
   if (list.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 text-xs">
+      <div class="p-8 text-center bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-neutral-500 text-xs">
         Chưa có mục theo dõi nào. Điền thông tin ở khung bên trái để kích hoạt quét tự động.
       </div>
     `;
@@ -932,18 +1079,18 @@ function renderWatchdogs(list) {
   container.innerHTML = "";
   list.forEach(w => {
     const item = document.createElement("div");
-    item.className = `p-4 rounded-xl border ${w.enabled ? 'bg-white dark:bg-[#111827] border-slate-200 dark:border-slate-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200/60 dark:border-slate-800/60 opacity-60'} flex items-center justify-between gap-3 transition min-w-0 shadow-xs`;
+    item.className = `p-4 rounded-xl border ${w.enabled ? 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800' : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200/60 dark:border-neutral-800/60 opacity-60'} flex items-center justify-between gap-3 transition min-w-0 shadow-xs tactile-card`;
 
     item.innerHTML = `
       <div class="space-y-1 min-w-0 flex-1">
         <div class="flex items-center space-x-2 min-w-0 flex-wrap">
-          <span class="font-bold text-slate-900 dark:text-white text-sm truncate">${escapeHtml(w.keyword)}</span>
+          <span class="font-bold text-neutral-900 dark:text-neutral-100 text-sm truncate">${escapeHtml(w.keyword)}</span>
           <span class="text-xs px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-mono font-bold shrink-0">
             &le; ${formatVND(w.maxPrice)}
           </span>
           ${w.telegramBotToken ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-medium">Telegram</span>' : ''}
         </div>
-        <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center space-x-2 truncate">
+        <div class="text-xs text-neutral-500 dark:text-neutral-400 flex items-center space-x-2 truncate">
           <span>Phát hiện: <b class="text-rose-600 dark:text-rose-400 font-bold">${w.alertCount || 0}</b> deal</span>
           <span>•</span>
           <span class="truncate">${w.lastChecked ? timeAgo(w.lastChecked) : 'Chờ quét'}</span>
@@ -953,13 +1100,13 @@ function renderWatchdogs(list) {
       <div class="flex items-center space-x-2 shrink-0">
         <button 
           onclick="toggleWatchdog('${w.id}')" 
-          class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${w.enabled ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200'}"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${w.enabled ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border-neutral-200'}"
         >
-          ${w.enabled ? 'Đang Bật' : 'Tạm Dừng'}
+          ${w.enabled ? 'Đang bật' : 'Tạm dừng'}
         </button>
         <button 
           onclick="deleteWatchdog('${w.id}')" 
-          class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
+          class="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
           title="Xóa"
         >
           <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1070,4 +1217,647 @@ function escapeHtml(text = "") {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+
+// =========================================================================
+// === BẢNG GIÁ LINH KIỆN ĐIỆN TỬ HÀNG NGÀY (DAILY HARDWARE PRICES) ===
+// =========================================================================
+
+// Danh mục dữ liệu giá chuẩn xác hiển thị ngay lập tức (không lo gián đoạn mạng)
+const FALLBACK_DAILY_PRICES = [
+  // Card đồ họa (gpu)
+  {
+    id: "gpu-rtx3060-12g",
+    name: "NVIDIA GeForce RTX 3060 12GB (Cũ 98-99%)",
+    category: "gpu",
+    categoryName: "Card đồ họa (gpu)",
+    minPrice: 4800000,
+    avgPrice: 5350000,
+    changeAmount: -150000,
+    changePercent: -2.7,
+    trend: "down",
+    recommendationLabel: "🔥 Giá chạm đáy - kèo hời",
+    spec: "12GB GDDR6, 192-bit, TDP 170W, Fullbox / Hết BH hãng",
+    searchKeyword: "RTX 3060 12GB",
+    suggestedMaxPrice: 5400000
+  },
+  {
+    id: "gpu-rtx3070-8g",
+    name: "NVIDIA GeForce RTX 3070 8GB (Cũ)",
+    category: "gpu",
+    categoryName: "Card đồ họa (gpu)",
+    minPrice: 6200000,
+    avgPrice: 6850000,
+    changeAmount: 0,
+    changePercent: 0,
+    trend: "stable",
+    recommendationLabel: "✨ Giá ổn định",
+    spec: "8GB GDDR6, 256-bit, chơi mượt 2K Ultra Settings",
+    searchKeyword: "RTX 3070",
+    suggestedMaxPrice: 6900000
+  },
+  {
+    id: "gpu-rtx4060-8g",
+    name: "NVIDIA GeForce RTX 4060 8GB (Lướt BH dài)",
+    category: "gpu",
+    categoryName: "Card đồ họa (gpu)",
+    minPrice: 6800000,
+    avgPrice: 7300000,
+    changeAmount: -200000,
+    changePercent: -2.6,
+    trend: "down",
+    recommendationLabel: "🔥 Giảm nhẹ - đáng mua",
+    spec: "Kiến trúc Ada Lovelace, DLSS 3 Frame Gen, ăn cực ít điện (115W)",
+    searchKeyword: "RTX 4060",
+    suggestedMaxPrice: 7400000
+  },
+  {
+    id: "gpu-gtx1660s-6g",
+    name: "NVIDIA GeForce GTX 1660 Super 6GB (Cũ)",
+    category: "gpu",
+    categoryName: "Card đồ họa (gpu)",
+    minPrice: 2200000,
+    avgPrice: 2550000,
+    changeAmount: -50000,
+    changePercent: -1.9,
+    trend: "down",
+    recommendationLabel: "🔥 Vua phân khúc giá rẻ",
+    spec: "6GB GDDR6, chiến mượt Esport FO4, CS2, Valorant, GTA V",
+    searchKeyword: "GTX 1660 Super",
+    suggestedMaxPrice: 2600000
+  },
+  {
+    id: "gpu-rx6600-8g",
+    name: "AMD Radeon RX 6600 8GB (Cũ / Còn BH)",
+    category: "gpu",
+    categoryName: "Card đồ họa (gpu)",
+    minPrice: 3200000,
+    avgPrice: 3650000,
+    changeAmount: 50000,
+    changePercent: 1.4,
+    trend: "up",
+    recommendationLabel: "✨ Giá tốt P/P",
+    spec: "8GB GDDR6, hiệu năng nhỉnh hơn RTX 2060, tiêu thụ 132W",
+    searchKeyword: "RX 6600",
+    suggestedMaxPrice: 3700000
+  },
+
+  // Vi xử lý (cpu)
+  {
+    id: "cpu-i5-12400f",
+    name: "Intel Core i5-12400F (Tray / Box cũ)",
+    category: "cpu",
+    categoryName: "Vi xử lý (cpu)",
+    minPrice: 2150000,
+    avgPrice: 2450000,
+    changeAmount: -50000,
+    changePercent: -2.0,
+    trend: "down",
+    recommendationLabel: "🔥 CPU quốc dân giá tốt",
+    spec: "6 nhân 12 luồng, xung boost 4.4GHz, Socket LGA1700",
+    searchKeyword: "i5 12400F",
+    suggestedMaxPrice: 2500000
+  },
+  {
+    id: "cpu-i5-13400f",
+    name: "Intel Core i5-13400F (Lướt / BH)",
+    category: "cpu",
+    categoryName: "Vi xử lý (cpu)",
+    minPrice: 3500000,
+    avgPrice: 3950000,
+    changeAmount: -150000,
+    changePercent: -3.6,
+    trend: "down",
+    recommendationLabel: "🔥 Giảm mạnh",
+    spec: "10 nhân 16 luồng (6P + 4E), đa nhiệm và render khỏe",
+    searchKeyword: "i5 13400F",
+    suggestedMaxPrice: 4000000
+  },
+  {
+    id: "cpu-i3-12100f",
+    name: "Intel Core i3-12100F (Cũ / Tray)",
+    category: "cpu",
+    categoryName: "Vi xử lý (cpu)",
+    minPrice: 1400000,
+    avgPrice: 1650000,
+    changeAmount: 0,
+    changePercent: 0,
+    trend: "stable",
+    recommendationLabel: "✨ Giá rẻ mượt mà",
+    spec: "4 nhân 8 luồng, đơn nhân rất khỏe cho game online",
+    searchKeyword: "i3 12100F",
+    suggestedMaxPrice: 1700000
+  },
+  {
+    id: "cpu-ryzen-5-5600",
+    name: "AMD Ryzen 5 5600 (AM4, Cũ / Tray)",
+    category: "cpu",
+    categoryName: "Vi xử lý (cpu)",
+    minPrice: 2000000,
+    avgPrice: 2300000,
+    changeAmount: -50000,
+    changePercent: -2.1,
+    trend: "down",
+    recommendationLabel: "🔥 Best P/P cho dàn AM4",
+    spec: "6 nhân 12 luồng, 32MB L3 Cache, xung boost 4.4GHz",
+    searchKeyword: "Ryzen 5 5600",
+    suggestedMaxPrice: 2350000
+  },
+  {
+    id: "cpu-ryzen-7-5700x3d",
+    name: "AMD Ryzen 7 5700X3D (Vua gaming AM4)",
+    category: "cpu",
+    categoryName: "Vi xử lý (cpu)",
+    minPrice: 4600000,
+    avgPrice: 5100000,
+    changeAmount: -100000,
+    changePercent: -1.9,
+    trend: "down",
+    recommendationLabel: "🔥 Đang hot - cực khỏe",
+    spec: "8 nhân 16 luồng, 96MB 3D V-Cache, FPS game esport cực cao",
+    searchKeyword: "5700X3D",
+    suggestedMaxPrice: 5200000
+  },
+
+  // RAM & ssd
+  {
+    id: "ram-ddr4-16g-3200",
+    name: "RAM Desktop DDR4 16GB Bus 3200 (Kingston / Corsair)",
+    category: "ram_ssd",
+    categoryName: "RAM & ssd",
+    minPrice: 600000,
+    avgPrice: 750000,
+    changeAmount: 0,
+    changePercent: 0,
+    trend: "stable",
+    recommendationLabel: "✨ Giá bình ổn",
+    spec: "Kingston Fury, Corsair LPX, G.Skill Ripjaws Bus 3200MHz",
+    searchKeyword: "RAM 16GB 3200",
+    suggestedMaxPrice: 800000
+  },
+  {
+    id: "ram-ddr5-32g-6000",
+    name: "Kit RAM DDR5 32GB (2x16GB) Bus 5600 - 6000MHz",
+    category: "ram_ssd",
+    categoryName: "RAM & ssd",
+    minPrice: 1950000,
+    avgPrice: 2350000,
+    changeAmount: -100000,
+    changePercent: -4.0,
+    trend: "down",
+    recommendationLabel: "🔥 Giảm sâu - nên nâng cấp",
+    spec: "Corsair Vengeance, Kingston Renegade, Intel XMP 3.0 / AMD EXPO",
+    searchKeyword: "RAM DDR5 32GB",
+    suggestedMaxPrice: 2400000
+  },
+  {
+    id: "ssd-nvme-1tb-gen4",
+    name: "SSD NVMe M.2 1TB PCIe Gen 4x4 (5000-7000MB/s)",
+    category: "ram_ssd",
+    categoryName: "RAM & ssd",
+    minPrice: 1350000,
+    avgPrice: 1650000,
+    changeAmount: 50000,
+    changePercent: 3.1,
+    trend: "up",
+    recommendationLabel: "✨ Ổn định",
+    spec: "Samsung 980 Pro, Kingston KC3000, Kioxia Exceria Pro 1TB",
+    searchKeyword: "SSD NVMe 1TB",
+    suggestedMaxPrice: 1700000
+  },
+  {
+    id: "ssd-nvme-500g",
+    name: "SSD NVMe M.2 500GB PCIe Gen 3/Gen 4 cũ",
+    category: "ram_ssd",
+    categoryName: "RAM & ssd",
+    minPrice: 650000,
+    avgPrice: 820000,
+    changeAmount: -30000,
+    changePercent: -3.5,
+    trend: "down",
+    recommendationLabel: "🔥 Giá rất tốt",
+    spec: "Sức khỏe Good 98-100%, ghi ít TBW, BH còn dài",
+    searchKeyword: "SSD 500GB",
+    suggestedMaxPrice: 850000
+  },
+
+  // Điện thoại cũ
+  {
+    id: "phone-ip13-128",
+    name: "Apple iPhone 13 128GB (Quốc tế cũ 98-99%)",
+    category: "phone",
+    categoryName: "Điện thoại cũ",
+    minPrice: 8800000,
+    avgPrice: 9900000,
+    changeAmount: -300000,
+    changePercent: -2.9,
+    trend: "down",
+    recommendationLabel: "🔥 Rớt giá tốt - nên xúc",
+    spec: "Màn 6.1 OLED Super Retina, chip A15 Bionic, pin 85-92%",
+    searchKeyword: "iPhone 13 128GB",
+    suggestedMaxPrice: 10000000
+  },
+  {
+    id: "phone-ip14prm-128",
+    name: "Apple iPhone 14 Pro Max 128GB (Cũ 99%)",
+    category: "phone",
+    categoryName: "Điện thoại cũ",
+    minPrice: 17500000,
+    avgPrice: 18900000,
+    changeAmount: -400000,
+    changePercent: -2.1,
+    trend: "down",
+    recommendationLabel: "🔥 Kèo thơm cao cấp",
+    spec: "Dynamic Island, màn 120Hz ProMotion, camera 48MP, pin trâu",
+    searchKeyword: "iPhone 14 Pro Max",
+    suggestedMaxPrice: 19000000
+  },
+  {
+    id: "phone-ip12-64",
+    name: "Apple iPhone 12 64GB (Cũ quốc tế)",
+    category: "phone",
+    categoryName: "Điện thoại cũ",
+    minPrice: 5600000,
+    avgPrice: 6300000,
+    changeAmount: -100000,
+    changePercent: -1.6,
+    trend: "down",
+    recommendationLabel: "✨ Giá rẻ dễ tiếp cận",
+    spec: "Hỗ trợ 5G, chip A14 Bionic, thiết kế viền vuông sang trọng",
+    searchKeyword: "iPhone 12",
+    suggestedMaxPrice: 6400000
+  },
+  {
+    id: "phone-ss-s23-5g",
+    name: "Samsung Galaxy S23 5G 128GB (Cũ chính hãng)",
+    category: "phone",
+    categoryName: "Điện thoại cũ",
+    minPrice: 8300000,
+    avgPrice: 9100000,
+    changeAmount: -200000,
+    changePercent: -2.2,
+    trend: "down",
+    recommendationLabel: "🔥 Flagship nhỏ gọn đáng mua",
+    spec: "Snapdragon 8 Gen 2 for Galaxy mát mẻ, camera chụp đêm sắc nét",
+    searchKeyword: "Samsung Galaxy S23",
+    suggestedMaxPrice: 9200000
+  },
+
+  // Laptop cũ
+  {
+    id: "laptop-macbook-air-m1",
+    name: "Apple MacBook Air M1 2020 (8GB / 256GB cũ đẹp)",
+    category: "laptop",
+    categoryName: "Laptop cũ",
+    minPrice: 11500000,
+    avgPrice: 12800000,
+    changeAmount: -400000,
+    changePercent: -3.0,
+    trend: "down",
+    recommendationLabel: "🔥 Vua văn phòng & sinh viên",
+    spec: "Pin trâu 12-15 tiếng, màn Retina cực đẹp, loa hay, nhẹ 1.29kg",
+    searchKeyword: "MacBook Air M1",
+    suggestedMaxPrice: 13000000
+  },
+  {
+    id: "laptop-thinkpad-t14-g2",
+    name: "Lenovo ThinkPad T14 Gen 2 (Ryzen 5 Pro / Core i5 cũ)",
+    category: "laptop",
+    categoryName: "Laptop cũ",
+    minPrice: 7500000,
+    avgPrice: 8600000,
+    changeAmount: -100000,
+    changePercent: -1.1,
+    trend: "down",
+    recommendationLabel: "✨ Bàn phím số 1 cho coder",
+    spec: "RAM 16GB, SSD 512GB, độ bền tiêu chuẩn quân đội, bàn phím gõ sướng",
+    searchKeyword: "ThinkPad T14",
+    suggestedMaxPrice: 8800000
+  },
+  {
+    id: "laptop-gaming-legion5-3060",
+    name: "Lenovo Legion 5 (Ryzen 7 5800H / RTX 3060 cũ)",
+    category: "laptop",
+    categoryName: "Laptop cũ",
+    minPrice: 14500000,
+    avgPrice: 16200000,
+    changeAmount: -300000,
+    changePercent: -1.8,
+    trend: "down",
+    recommendationLabel: "✨ Tản nhiệt ngon nhất phân khúc",
+    spec: "Màn 15.6 inch 165Hz 100% sRGB, RTX 3060 130W bung hết công suất",
+    searchKeyword: "Legion 5 RTX 3060",
+    suggestedMaxPrice: 16500000
+  },
+
+  // Màn hình
+  {
+    id: "mon-24-144hz",
+    name: "Màn hình 24 inch IPS 144Hz - 165Hz FHD (Cũ còn BH)",
+    category: "monitor",
+    categoryName: "Màn hình",
+    minPrice: 1700000,
+    avgPrice: 2150000,
+    changeAmount: -50000,
+    changePercent: -2.3,
+    trend: "down",
+    recommendationLabel: "🔥 Rất rẻ cho góc chơi game",
+    spec: "AOC, ViewSonic, MSI, LG 24GN650 tấm nền IPS viền mỏng",
+    searchKeyword: "Màn hình 144Hz",
+    suggestedMaxPrice: 2200000
+  },
+  {
+    id: "mon-27-2k-165hz",
+    name: "Màn hình 27 inch 2K QHD 165Hz - 180Hz IPS (Cũ / lướt)",
+    category: "monitor",
+    categoryName: "Màn hình",
+    minPrice: 3200000,
+    avgPrice: 3850000,
+    changeAmount: -50000,
+    changePercent: -1.3,
+    trend: "down",
+    recommendationLabel: "✨ Nâng cấp trải nghiệm sắc nét",
+    spec: "Độ phân giải 2560x1440, màu sắc chuẩn, chân đế nâng hạ xoay dọc",
+    searchKeyword: "Màn hình 27 2K",
+    suggestedMaxPrice: 3900000
+  }
+];
+
+function getFallbackDailyPrices(category = "all", query = "") {
+  const q = (query || "").toLowerCase().trim();
+  const cat = (category || "all").toLowerCase().trim();
+
+  const filtered = FALLBACK_DAILY_PRICES.filter(item => {
+    if (cat !== "all" && item.category !== cat) return false;
+    if (q) {
+      const matchName = item.name.toLowerCase().includes(q);
+      const matchKeyword = item.searchKeyword.toLowerCase().includes(q);
+      const matchSpec = (item.spec || "").toLowerCase().includes(q);
+      if (!matchName && !matchKeyword && !matchSpec) return false;
+    }
+    return true;
+  });
+
+  return {
+    date: new Date().toLocaleDateString("vi-VN"),
+    items: filtered
+  };
+}
+
+let currentDailyPrices = [];
+let selectedDailyCategory = "all";
+let dailyPriceSearchQuery = "";
+let dailySearchDebounceTimer = null;
+
+async function loadDailyPrices(category = selectedDailyCategory, query = dailyPriceSearchQuery) {
+  const container = document.getElementById("daily-prices-grid");
+  const dateBadge = document.getElementById("daily-price-date-badge");
+  if (!container) return;
+
+  let data = null;
+
+  try {
+    const params = new URLSearchParams();
+    if (category && category !== "all") params.append("category", category);
+    if (query) params.append("q", query);
+
+    const res = await fetch(`/api/daily-prices?${params.toString()}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && !text.trim().startsWith("<")) {
+        data = JSON.parse(text);
+      }
+    }
+  } catch (err) {
+    console.warn("Dùng fallback dữ liệu bảng giá linh kiện:", err);
+  }
+
+  if (!data || !Array.isArray(data.items)) {
+    data = getFallbackDailyPrices(category, query);
+  }
+
+  if (dateBadge && data.date) {
+    dateBadge.textContent = `Cập nhật ngày ${data.date}`;
+  }
+
+  currentDailyPrices = data.items || [];
+  renderDailyPrices(currentDailyPrices);
+}
+
+// Cập nhật các chỉ số trong Bento Spotlight Box
+function updateDailySpotlight(items) {
+  if (!items || items.length === 0) return;
+
+  // 1. Món giảm giá nhiều nhất
+  let maxDropItem = items[0];
+  items.forEach(it => {
+    if (it.changeAmount < maxDropItem.changeAmount) {
+      maxDropItem = it;
+    }
+  });
+
+  const hotNameEl = document.getElementById("spotlight-hot-name");
+  const hotDescEl = document.getElementById("spotlight-hot-desc");
+  if (hotNameEl && maxDropItem) {
+    hotNameEl.textContent = maxDropItem.name.split("(")[0].trim();
+  }
+  if (hotDescEl && maxDropItem) {
+    hotDescEl.textContent = `Giảm ${formatVND(maxDropItem.changeAmount)} (${maxDropItem.changePercent}%)`;
+  }
+
+  // 2. Tổng số thiết bị theo dõi
+  const totalEl = document.getElementById("spotlight-total-tracked");
+  if (totalEl) {
+    animateNumericValue(totalEl, items.length, 300, "raw");
+  }
+
+  // 3. Số lượng linh kiện < 5 triệu
+  const budgetCount = items.filter(it => it.minPrice <= 5000000).length;
+  const budgetEl = document.getElementById("spotlight-budget-count");
+  if (budgetEl) {
+    animateNumericValue(budgetEl, budgetCount, 320, "raw");
+  }
+}
+
+function renderDailyPrices(items) {
+  const container = document.getElementById("daily-prices-grid");
+  if (!container) return;
+
+  // Cập nhật Spotlight Row
+  updateDailySpotlight(items);
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-16 text-center space-y-3 bento-box p-8">
+        <div class="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto text-neutral-400">
+          <i data-lucide="info" class="w-6 h-6"></i>
+        </div>
+        <h4 class="text-sm font-bold text-neutral-800 dark:text-neutral-200">Không tìm thấy linh kiện phù hợp</h4>
+        <p class="text-xs text-neutral-500">Thử tìm với từ khóa khác hoặc chọn "Tất cả" danh mục.</p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = "";
+
+  items.forEach(item => {
+    let trendBadge = "";
+    if (item.trend === "down") {
+      trendBadge = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+          <i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i>
+          <span>${formatVND(Math.abs(item.changeAmount))} (${item.changePercent}%)</span>
+        </span>
+      `;
+    } else if (item.trend === "up") {
+      trendBadge = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60">
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          <span>+${formatVND(item.changeAmount)} (+${item.changePercent}%)</span>
+        </span>
+      `;
+    } else {
+      trendBadge = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+          <span>▬ Ổn định</span>
+        </span>
+      `;
+    }
+
+    const card = document.createElement("div");
+    card.className = "bento-box tactile-card p-5 transition flex flex-col justify-between space-y-4";
+    card.innerHTML = `
+      <div class="space-y-3">
+        <!-- Header card: Category & Trend -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60">
+            ${escapeHtml(item.categoryName)}
+          </span>
+          ${trendBadge}
+        </div>
+
+        <!-- Tên linh kiện -->
+        <div>
+          <h3 class="font-extrabold text-base text-neutral-900 dark:text-neutral-100 leading-snug">
+            ${escapeHtml(item.name)}
+          </h3>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+            ${escapeHtml(item.spec)}
+          </p>
+        </div>
+
+        <!-- Khung giá: Giá sàn vs Giá trung bình -->
+        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200/60 dark:border-white/5">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Giá sàn săn được</span>
+            <span class="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">
+              ${formatVND(item.minPrice)}
+            </span>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Giá TB thị trường</span>
+            <span class="text-base font-bold text-blue-600 dark:text-blue-400 font-mono">
+              ${formatVND(item.avgPrice)}
+            </span>
+          </div>
+        </div>
+
+        <!-- Nhãn khuyến nghị -->
+        <div class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+          <span>${item.recommendationLabel || "✨ Giá tốt"}</span>
+        </div>
+      </div>
+
+      <!-- Nút hành động 1-Click săn bài đăng -->
+      <button 
+        type="button" 
+        onclick="huntDailyItem('${escapeHtml(item.searchKeyword)}', ${item.suggestedMaxPrice})" 
+        class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs shadow-blue-500/20"
+      >
+        <i data-lucide="search" class="w-3.5 h-3.5"></i>
+        <span>Săn bài đăng "${escapeHtml(item.searchKeyword)}" ngay</span>
+      </button>
+    `;
+
+    container.appendChild(card);
+  });
+
+  lucide.createIcons();
+
+  // Hiệu ứng xuất hiện phân tầng Anime.js
+  animateStaggerElements("#daily-prices-grid", ".tactile-card");
+}
+
+function selectDailyPriceCategory(cat) {
+  selectedDailyCategory = cat;
+  const pills = document.querySelectorAll(".daily-price-pill");
+  pills.forEach(p => {
+    const pCat = p.getAttribute("data-cat");
+    if (pCat === cat) {
+      p.className = "daily-price-pill active px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold shrink-0 transition shadow-xs";
+    } else {
+      p.className = "daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition";
+    }
+  });
+
+  loadDailyPrices(cat, dailyPriceSearchQuery);
+}
+
+function handleDailyPriceInput(input) {
+  toggleClearBtn(input, "daily-price-clear-btn");
+  handleDailyPriceSearch(input.value);
+}
+
+function clearDailyPriceSearch() {
+  const input = document.getElementById("daily-price-search");
+  if (input) {
+    input.value = "";
+    toggleClearBtn(input, "daily-price-clear-btn");
+  }
+  handleDailyPriceSearch("");
+}
+
+function handleDailyPriceSearch(val) {
+  dailyPriceSearchQuery = (val || "").trim();
+  clearTimeout(dailySearchDebounceTimer);
+  dailySearchDebounceTimer = setTimeout(() => {
+    loadDailyPrices(selectedDailyCategory, dailyPriceSearchQuery);
+  }, 250);
+}
+
+function huntDailyItem(keyword, maxPrice) {
+  switchTab("search");
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.value = keyword;
+    toggleClearBtn(searchInput, "search-clear-btn");
+  }
+
+  // Đảm bảo không bị kẹt lọc danh mục hoặc nguồn bán lẻ cũ
+  selectCategory("all");
+  selectSource("all");
+
+  // Đồng bộ khoảng giá:
+  // - Nếu sản phẩm có giá trần <= 5tr (như CPU Ryzen 5 5600, i5 12400f, RAM, SSD),
+  //   giữ bộ lọc mặc định < 5tr (5.000.000 đ) để người dùng xem trọn vẹn cả CPU lẻ và combo hời
+  // - Nếu sản phẩm cao hơn 5tr, nâng trần tương ứng (12tr, 20tr hoặc Tất cả) để không bị ẩn kết quả
+  let targetPreset = 5000000;
+  const num = Number(maxPrice) || 0;
+  if (num > 20000000) {
+    targetPreset = 0; // Tất cả giá
+  } else if (num > 12000000) {
+    targetPreset = 20000000; // < 20tr
+  } else if (num > 5000000) {
+    targetPreset = 12000000; // < 12tr
+  } else {
+    targetPreset = 5000000; // < 5tr (mặc định)
+  }
+
+  setPricePreset(targetPreset, true);
+
+  clearTimeout(searchDebounceTimer);
+  performSearch(keyword);
 }

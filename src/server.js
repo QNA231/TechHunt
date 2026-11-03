@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { aggregateSearch } from "./scrapers/index.js";
 import { validateIMEI, validateSerialNumber } from "./services/hardwareVerifier.js";
+import { getDailyPrices, updateDailyPrice } from "./services/dailyPrices.js";
 import { getGroupSearchShortcuts } from "./services/facebookGroups.js";
 import { 
   getWatchdogs, 
@@ -179,7 +180,19 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // 9. Kiểm tra trạng thái hệ thống
+    // 9. Lấy biến động bảng giá linh kiện điện tử hàng ngày
+    if (pathname === "/api/daily-prices" && req.method === "GET") {
+      const category = parsedUrl.searchParams.get("category") || "all";
+      const q = parsedUrl.searchParams.get("q") || "";
+      const prices = await getDailyPrices(category, q);
+      sendJson(200, {
+        date: new Date().toLocaleDateString("vi-VN"),
+        items: prices
+      });
+      return;
+    }
+
+    // 10. Kiểm tra trạng thái hệ thống
     if (pathname === "/api/health" && req.method === "GET") {
       sendJson(200, { status: "ok", timestamp: Date.now(), uptime: process.uptime() });
       return;

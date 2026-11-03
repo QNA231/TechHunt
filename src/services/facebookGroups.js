@@ -10,7 +10,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   // --- NHÓM LINH KIỆN PC & VGA ---
   {
     id: "cho-vga-pc",
-    name: "Chợ VGA & Linh Kiện Máy Tính Cũ",
+    name: "Chợ VGA & linh kiện máy tính cũ",
     members: "480.000+ thành viên",
     category: "pc",
     groupId: "chovgapc",
@@ -19,7 +19,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   },
   {
     id: "vietnam-gaming-drama",
-    name: "Vietnam Gaming Show - Chợ Đồ Chơi PC",
+    name: "Vietnam Gaming Show – Chợ đồ chơi PC",
     members: "320.000+ thành viên",
     category: "pc",
     groupId: "vietnamgamingshow",
@@ -28,7 +28,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   },
   {
     id: "cho-voz-fb",
-    name: "Chợ VoZ - Mua Bán Đồ Công Nghệ FB",
+    name: "Chợ VoZ – Mua bán đồ công nghệ Facebook",
     members: "250.000+ thành viên",
     category: "pc",
     groupId: "chovozfb",
@@ -39,7 +39,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   // --- NHÓM ĐIỆN THOẠI & IPHONE ---
   {
     id: "cho-iphone-cu",
-    name: "Hội Mua Bán iPhone Cũ Uy Tín Hà Nội & TP.HCM",
+    name: "Hội mua bán iPhone cũ Hà Nội & TP.HCM",
     members: "390.000+ thành viên",
     category: "phone",
     groupId: "muabaniphonehanoi.tphcm",
@@ -48,7 +48,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   },
   {
     id: "cho-smartphone-cu",
-    name: "Chợ Smartphone Cũ & Like New Toàn Quốc",
+    name: "Chợ smartphone cũ & like new toàn quốc",
     members: "210.000+ thành viên",
     category: "phone",
     groupId: "chosmartphonecu",
@@ -59,7 +59,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   // --- NHÓM LAPTOP & THINKPAD & MACBOOK ---
   {
     id: "hoi-thinkpad-vn",
-    name: "Hội ThinkPad & Laptop Doanh Nhân Việt Nam",
+    name: "Hội ThinkPad & laptop doanh nhân Việt Nam",
     members: "140.000+ thành viên",
     category: "laptop",
     groupId: "thinkpadvietnam",
@@ -68,7 +68,7 @@ export const VETTED_FACEBOOK_GROUPS = [
   },
   {
     id: "cho-macbook-cu",
-    name: "Chợ Mua Bán MacBook Cũ Giá Tốt",
+    name: "Chợ mua bán MacBook cũ giá tốt",
     members: "180.000+ thành viên",
     category: "laptop",
     groupId: "chomacbookvietnam",

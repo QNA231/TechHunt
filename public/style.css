@@ -1,85 +1,183 @@
-/* Style Sheet - Thiết Kế Hiện Đại, Tương Phản Cao, Hỗ Trợ Drawer Mobile & Slider Lớn */
+/* Style Sheet - Thiết Kế Kokonut Ui & Hoạt Họa Anime.js
+   Triết lý: Tinh tế, thủ công cao, bento grid, thẻ xúc giác (tactile cards), 
+   nền sáng trung tính (#f8f9fa), nền tối than dịu (#09090b), viền siêu mỏng.
+*/
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Kokonut Ui Light Theme (Trung tính ấm, dễ chịu cho mắt) */
+  --bg-neutral-light: #f8f9fa;
+  --card-light: #ffffff;
+  --border-light: rgba(24, 24, 27, 0.08);
+  --text-primary-light: #18181b;
+  --text-secondary-light: #71717a;
+
+  /* Kokonut Ui Dark Theme (Than tối dịu, không gắt) */
+  --bg-neutral-dark: #09090b;
+  --card-dark: #121215;
+  --border-dark: rgba(255, 255, 255, 0.08);
+  --text-primary-dark: #fafafa;
+  --text-secondary-dark: #a1a1aa;
 }
 
 body {
   font-family: var(--font-sans);
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: var(--bg-neutral-light);
+  color: var(--text-primary-light);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.dark body, body.dark {
+  background-color: var(--bg-neutral-dark);
+  color: var(--text-primary-dark);
 }
 
 code, .font-mono {
   font-family: var(--font-mono);
 }
 
-/* Thanh cuộn tinh tế */
+/* Thanh cuộn tinh tế kiểu Kokonut Ui */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(113, 113, 122, 0.25);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.55);
+  background: rgba(113, 113, 122, 0.45);
 }
 
-/* Custom Range Slider - Nâng cấp to và đầm tay hơn */
+/* Thẻ xúc giác Kokonut Ui (Tactile Card) */
+.tactile-card {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.2s ease,
+              background-color 0.2s ease;
+  will-change: transform;
+}
+
+.tactile-card:hover {
+  transform: translateY(-2px);
+}
+
+.tactile-card:active {
+  transform: scale(0.985);
+}
+
+/* Khối hộp Bento Grid (Bento Box) */
+.bento-box {
+  background: var(--card-light);
+  border: 1px solid var(--border-light);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .bento-box {
+  background: var(--card-dark);
+  border: 1px solid var(--border-dark);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.bento-box:hover {
+  border-color: rgba(37, 99, 235, 0.25);
+}
+.dark .bento-box:hover {
+  border-color: rgba(96, 165, 250, 0.25);
+}
+
+/* Thanh điều khiển trung tâm (Command Bar Input) */
+.command-bar {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.command-bar:focus-within {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+.dark .command-bar:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+}
+
+/* Phím tắt KBD nhỏ gọn phong cách Apple/Linear */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.04);
+  color: #71717a;
+}
+.dark kbd {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #a1a1aa;
+}
+
+/* Custom Range Slider - Cảm giác xúc giác đầm tay */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px; /* Tăng độ dày track */
-  background: #e2e8f0;
+  height: 8px;
+  background: #e4e4e7;
   border-radius: 9999px;
   outline: none;
+  transition: background 0.2s ease;
 }
 .dark input[type="range"] {
-  background: #334155;
+  background: #27272a;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 24px;  /* Nâng kích thước thumb to dễ bấm trên điện thoại */
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background: #2563eb;
   border: 3px solid #ffffff;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 input[type="range"]::-webkit-slider-thumb:hover,
 input[type="range"]::-webkit-slider-thumb:active {
-  transform: scale(1.18);
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.45);
+  transform: scale(1.15);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background: #2563eb;
   border: 3px solid #ffffff;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Card sản phẩm hiện đại */
 .deal-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.2s ease;
+  will-change: transform;
 }
 .deal-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 /* Đảm bảo text không bị tràn */
@@ -88,7 +186,44 @@ input[type="range"]::-moz-range-thumb {
   word-break: break-word;
 }
 
+/* Xử lý hiển thị mô tả chuẩn chỉ, không bao giờ bị khuất hay cắt nửa chữ */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4rem;
+  max-height: 2.8rem;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35rem;
+  max-height: 4.05rem;
+}
+
 /* Hiệu ứng trượt Drawer Mobile mượt mà */
 #filter-sidebar {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Điểm sáng nhấp nháy trực tiếp (Live pulse dot) */
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.6;
+  }
+}
+
+.live-dot {
+  animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

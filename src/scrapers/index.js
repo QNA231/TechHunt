@@ -1,5 +1,4 @@
 import { searchChoTot } from "./chotot.js";
-import { searchVoz } from "./voz.js";
 import { searchNhatTao } from "./nhattao.js";
 import { searchRetail } from "./retail.js";
 import { filterItems } from "../services/filter.js";
@@ -7,15 +6,14 @@ import { analyzePrices } from "../services/analyzer.js";
 import { extractAndVerifyIdentifiers } from "../services/hardwareVerifier.js";
 
 /**
- * Bộ điều phối tìm kiếm đa nguồn song song (100% DỮ LIỆU THỰC TẾ)
+ * Bộ điều phối tìm kiếm đa nguồn song song (Chợ Tốt, Nhật Tảo, Hệ thống Bán Lẻ/Máy Cũ)
  */
 export async function aggregateSearch(query = "", options = {}) {
   const startTime = Date.now();
   
-  // Chạy các adapter song song lấy dữ liệu thực tế
+  // Chạy các adapter song song lấy dữ liệu thực tế (đã loại bỏ VoZ theo yêu cầu)
   const promises = [
     searchChoTot(query, options).catch(() => []),
-    searchVoz(query, options).catch(() => []),
     searchNhatTao(query, options).catch(() => []),
     searchRetail(query, options).catch(() => [])
   ];
