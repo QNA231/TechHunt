@@ -1786,9 +1786,11 @@ function getFallbackDailyPrices(category = "all", query = "") {
 }
 
 let currentDailyPrices = [];
+let allBenchmarkDailyPrices = [];
 let selectedDailyCategory = "all";
 let dailyPriceSearchQuery = "";
 let dailySearchDebounceTimer = null;
+let isDailyBudgetFilterActive = false;
 
 async function loadDailyPrices(category = selectedDailyCategory, query = dailyPriceSearchQuery) {
   const container = document.getElementById("daily-prices-grid");
@@ -1822,16 +1824,23 @@ async function loadDailyPrices(category = selectedDailyCategory, query = dailyPr
   }
 
   currentDailyPrices = data.items || [];
+  if ((!category || category === "all") && !query && currentDailyPrices.length > 0) {
+    allBenchmarkDailyPrices = [...currentDailyPrices];
+  } else if (allBenchmarkDailyPrices.length === 0) {
+    allBenchmarkDailyPrices = [...FALLBACK_DAILY_PRICES];
+  }
+
   renderDailyPrices(currentDailyPrices);
 }
 
 // Cập nhật các chỉ số trong Bento Spotlight Box
 function updateDailySpotlight(items) {
-  if (!items || items.length === 0) return;
+  const baseItems = (items && items.length > 0) ? items : (allBenchmarkDailyPrices.length > 0 ? allBenchmarkDailyPrices : FALLBACK_DAILY_PRICES);
+  if (!baseItems || baseItems.length === 0) return;
 
   // 1. Món giảm giá nhiều nhất
-  let maxDropItem = items[0];
-  items.forEach(it => {
+  let maxDropItem = baseItems[0];
+  baseItems.forEach(it => {
     if (it.changeAmount < maxDropItem.changeAmount) {
       maxDropItem = it;
     }
@@ -1839,21 +1848,33 @@ function updateDailySpotlight(items) {
 
   const hotNameEl = document.getElementById("spotlight-hot-name");
   const hotDescEl = document.getElementById("spotlight-hot-desc");
-  if (hotNameEl && maxDropItem) {
-    hotNameEl.textContent = maxDropItem.name.split("(")[0].trim();
-  }
-  if (hotDescEl && maxDropItem) {
-    hotDescEl.textContent = `Giảm ${formatVND(maxDropItem.changeAmount)} (${maxDropItem.changePercent}%)`;
+  const hotBtnEl = document.getElementById("spotlight-hot-btn");
+  if (maxDropItem) {
+    const cleanName = maxDropItem.name.split("(")[0].trim();
+    if (hotNameEl) {
+      hotNameEl.textContent = cleanName;
+      hotNameEl.title = `Săn bài đăng ${cleanName} ngay`;
+      hotNameEl.onclick = () => huntDailyItem(maxDropItem.searchKeyword, maxDropItem.suggestedMaxPrice);
+    }
+    if (hotDescEl) {
+      hotDescEl.textContent = `Giảm ${formatVND(maxDropItem.changeAmount)} (${maxDropItem.changePercent}%)`;
+    }
+    if (hotBtnEl) {
+      hotBtnEl.title = `Săn bài đăng ${cleanName} ngay`;
+      hotBtnEl.onclick = () => huntDailyItem(maxDropItem.searchKeyword, maxDropItem.suggestedMaxPrice);
+    }
   }
 
-  // 2. Tổng số thiết bị theo dõi
+  // 2. Tổng số thiết bị khảo sát chuẩn
+  const catalogSize = allBenchmarkDailyPrices.length > 0 ? allBenchmarkDailyPrices.length : FALLBACK_DAILY_PRICES.length;
   const totalEl = document.getElementById("spotlight-total-tracked");
   if (totalEl) {
-    animateNumericValue(totalEl, items.length, 300, "raw");
+    animateNumericValue(totalEl, catalogSize, 300, "raw");
   }
 
-  // 3. Số lượng linh kiện < 5 triệu
-  const budgetCount = items.filter(it => it.minPrice <= 5000000).length;
+  // 3. Số lượng linh kiện < 5 triệu (tính trên toàn bộ danh mục khảo sát)
+  const fullList = allBenchmarkDailyPrices.length > 0 ? allBenchmarkDailyPrices : FALLBACK_DAILY_PRICES;
+  const budgetCount = fullList.filter(it => it.minPrice <= 5000000).length;
   const budgetEl = document.getElementById("spotlight-budget-count");
   if (budgetEl) {
     animateNumericValue(budgetEl, budgetCount, 320, "raw");
@@ -1861,20 +1882,23 @@ function updateDailySpotlight(items) {
 }
 
 function renderDailyPrices(items) {
+  // Cập nhật Spotlight Row
+  updateDailySpotlight(items);
+  renderDailyPriceCards(items);
+}
+
+function renderDailyPriceCards(items) {
   const container = document.getElementById("daily-prices-grid");
   if (!container) return;
 
-  // Cập nhật Spotlight Row
-  updateDailySpotlight(items);
-
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     container.innerHTML = `
       <div class="col-span-full py-16 text-center space-y-3 bento-box p-8">
         <div class="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto text-neutral-400">
           <i data-lucide="info" class="w-6 h-6"></i>
         </div>
         <h4 class="text-sm font-bold text-neutral-800 dark:text-neutral-200">Không tìm thấy linh kiện phù hợp</h4>
-        <p class="text-xs text-neutral-500">Thử tìm với từ khóa khác hoặc chọn "Tất cả" danh mục.</p>
+        <p class="text-xs text-neutral-500">Thử tìm với từ khóa khác hoặc bấm nút xem tất cả thiết bị.</p>
       </div>
     `;
     lucide.createIcons();
@@ -1921,7 +1945,7 @@ function renderDailyPrices(items) {
 
         <!-- Tên linh kiện -->
         <div>
-          <h3 class="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
+          <h3 class="font-extrabold text-base text-slate-900 dark:text-white leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition" onclick="huntDailyItem('${escapeHtml(item.searchKeyword)}', ${item.suggestedMaxPrice})" title="Săn ngay ${escapeHtml(item.searchKeyword)}">
             ${escapeHtml(item.name)}
           </h3>
           <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed font-medium">
@@ -1971,7 +1995,96 @@ function renderDailyPrices(items) {
   animateStaggerElements("#daily-prices-grid", ".tactile-card");
 }
 
+function toggleDailyBudgetFilter(maxPrice = 5000000) {
+  isDailyBudgetFilterActive = !isDailyBudgetFilterActive;
+
+  const budgetCard = document.getElementById("spotlight-budget-card");
+  const filterStatusBar = document.getElementById("daily-filter-status");
+  const filterStatusText = document.getElementById("daily-filter-status-text");
+
+  if (isDailyBudgetFilterActive) {
+    if (budgetCard) {
+      budgetCard.classList.add("ring-2", "ring-purple-500", "bg-purple-50/20", "dark:bg-purple-950/20");
+    }
+    const fullList = (currentDailyPrices && currentDailyPrices.length > 0) ? currentDailyPrices : (allBenchmarkDailyPrices.length > 0 ? allBenchmarkDailyPrices : FALLBACK_DAILY_PRICES);
+    const budgetItems = fullList.filter(it => it.minPrice <= maxPrice);
+
+    if (filterStatusBar && filterStatusText) {
+      filterStatusText.textContent = `Đang lọc: Phân khúc < ${formatVND(maxPrice)} (${budgetItems.length} thiết bị)`;
+      filterStatusBar.classList.remove("hidden");
+      filterStatusBar.classList.add("flex");
+    }
+    renderDailyPriceCards(budgetItems);
+  } else {
+    if (budgetCard) {
+      budgetCard.classList.remove("ring-2", "ring-purple-500", "bg-purple-50/20", "dark:bg-purple-950/20");
+    }
+    if (filterStatusBar) {
+      filterStatusBar.classList.add("hidden");
+      filterStatusBar.classList.remove("flex");
+    }
+    renderDailyPriceCards(currentDailyPrices);
+  }
+
+  const gridEl = document.getElementById("daily-prices-grid");
+  if (gridEl) {
+    gridEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function resetDailyPriceFilters() {
+  isDailyBudgetFilterActive = false;
+  const budgetCard = document.getElementById("spotlight-budget-card");
+  if (budgetCard) {
+    budgetCard.classList.remove("ring-2", "ring-purple-500", "bg-purple-50/20", "dark:bg-purple-950/20");
+  }
+  const filterStatusBar = document.getElementById("daily-filter-status");
+  if (filterStatusBar) {
+    filterStatusBar.classList.add("hidden");
+    filterStatusBar.classList.remove("flex");
+  }
+
+  // Reset category filters
+  selectedDailyCategory = "all";
+  const pills = document.querySelectorAll(".daily-price-pill");
+  pills.forEach(p => {
+    if (p.getAttribute("data-cat") === "all") {
+      p.className = "daily-price-pill active px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold shrink-0 transition shadow-xs";
+    } else {
+      p.className = "daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition";
+    }
+  });
+
+  // Clear search input
+  const input = document.getElementById("daily-price-search");
+  if (input) {
+    input.value = "";
+    toggleClearBtn(input, "daily-price-clear-btn");
+  }
+  dailyPriceSearchQuery = "";
+
+  loadDailyPrices("all", "");
+
+  const gridEl = document.getElementById("daily-prices-grid");
+  if (gridEl) {
+    gridEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
 function selectDailyPriceCategory(cat) {
+  if (isDailyBudgetFilterActive) {
+    isDailyBudgetFilterActive = false;
+    const budgetCard = document.getElementById("spotlight-budget-card");
+    if (budgetCard) {
+      budgetCard.classList.remove("ring-2", "ring-purple-500", "bg-purple-50/20", "dark:bg-purple-950/20");
+    }
+    const filterStatusBar = document.getElementById("daily-filter-status");
+    if (filterStatusBar) {
+      filterStatusBar.classList.add("hidden");
+      filterStatusBar.classList.remove("flex");
+    }
+  }
+
   selectedDailyCategory = cat;
   const pills = document.querySelectorAll(".daily-price-pill");
   pills.forEach(p => {
@@ -1979,7 +2092,7 @@ function selectDailyPriceCategory(cat) {
     if (pCat === cat) {
       p.className = "daily-price-pill active px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold shrink-0 transition shadow-xs";
     } else {
-      p.className = "daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition";
+      p.className = "daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition";
     }
   });
 
@@ -2001,6 +2114,19 @@ function clearDailyPriceSearch() {
 }
 
 function handleDailyPriceSearch(val) {
+  if (isDailyBudgetFilterActive) {
+    isDailyBudgetFilterActive = false;
+    const budgetCard = document.getElementById("spotlight-budget-card");
+    if (budgetCard) {
+      budgetCard.classList.remove("ring-2", "ring-purple-500", "bg-purple-50/20", "dark:bg-purple-950/20");
+    }
+    const filterStatusBar = document.getElementById("daily-filter-status");
+    if (filterStatusBar) {
+      filterStatusBar.classList.add("hidden");
+      filterStatusBar.classList.remove("flex");
+    }
+  }
+
   dailyPriceSearchQuery = (val || "").trim();
   clearTimeout(dailySearchDebounceTimer);
   dailySearchDebounceTimer = setTimeout(() => {
