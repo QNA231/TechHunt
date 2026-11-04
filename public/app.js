@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mở tab Giá hàng ngày làm trang mặc định
   switchTab("prices");
   loadWatchdogs();
+  restoreTelegramConfig();
 });
 
 // === HOẠT HỌA VI MÔ VỚI ANIME.JS (KOKONUT UI ANIMATION HELPERS) ===
@@ -1273,6 +1274,67 @@ async function triggerManualScan() {
       lucide.createIcons();
     }
   }
+}
+
+// === ĐÓNG MỞ VÀ LƯU THÔNG SỐ TELEGRAM BOT (COLLAPSIBLE DISCLOSURE) ===
+
+function toggleTelegramConfig(forceOpen) {
+  const body = document.getElementById("tg-config-body");
+  const chevron = document.getElementById("tg-config-chevron");
+  if (!body) return;
+
+  const isOpen = forceOpen !== undefined ? forceOpen : body.classList.contains("hidden");
+
+  if (isOpen) {
+    body.classList.remove("hidden");
+    if (chevron) chevron.style.transform = "rotate(180deg)";
+    if (window.anime) {
+      anime({
+        targets: body,
+        opacity: [0, 1],
+        translateY: [-6, 0],
+        duration: 200,
+        easing: "easeOutQuad"
+      });
+    }
+  } else {
+    body.classList.add("hidden");
+    if (chevron) chevron.style.transform = "rotate(0deg)";
+  }
+}
+
+function updateTelegramStatus() {
+  const botToken = document.getElementById("wd-bot-token")?.value.trim() || "";
+  const chatId = document.getElementById("wd-chat-id")?.value.trim() || "";
+  const statusEl = document.getElementById("tg-config-status");
+
+  if (botToken && chatId) {
+    if (statusEl) {
+      statusEl.textContent = "✓ Đã điền thông số kết nối";
+      statusEl.className = "text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold block truncate";
+    }
+    try {
+      localStorage.setItem("tdh_tg_bot_token", botToken);
+      localStorage.setItem("tdh_tg_chat_id", chatId);
+    } catch {}
+  } else {
+    if (statusEl) {
+      statusEl.textContent = "Bấm để cấu hình bot";
+      statusEl.className = "text-[11px] text-slate-500 dark:text-slate-400 font-medium block truncate";
+    }
+  }
+}
+
+function restoreTelegramConfig() {
+  try {
+    const token = localStorage.getItem("tdh_tg_bot_token") || "";
+    const chat = localStorage.getItem("tdh_tg_chat_id") || "";
+    const tokenInput = document.getElementById("wd-bot-token");
+    const chatInput = document.getElementById("wd-chat-id");
+    if (tokenInput && token) tokenInput.value = token;
+    if (chatInput && chat) chatInput.value = chat;
+    updateTelegramStatus();
+  } catch {}
 }
 
 async function testTelegram() {
