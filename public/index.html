@@ -2,7 +2,7 @@
 <html lang="vi" class="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="referrer" content="no-referrer">
   <title>TechHunter - Săn đồ công nghệ & linh kiện cũ giá tốt</title>
   <link rel="icon" type="image/svg+xml" href="logo.svg">
@@ -32,7 +32,7 @@
   </script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#f8f9fa] dark:bg-[#09090b] text-[#18181b] dark:text-[#fafafa] min-h-screen antialiased pb-16 lg:pb-0">
+<body class="bg-[#f4f4f6] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 min-h-screen antialiased pb-16 lg:pb-0">
 
   <!-- Header -->
   <header class="sticky top-0 z-40 bg-white/85 dark:bg-[#09090b]/85 backdrop-blur-md border-b border-neutral-200/80 dark:border-white/10 shadow-xs">
@@ -99,13 +99,13 @@
       <!-- SIDEBAR BỘ LỌC (CỐ ĐỊNH TRÊN DESKTOP, THÒ THỤT TRÊN MOBILE) -->
       <aside 
         id="filter-sidebar" 
-        class="fixed inset-y-0 left-0 z-50 w-[330px] max-w-[88vw] bg-white dark:bg-[#111827] border-r lg:border border-slate-200 dark:border-slate-800 p-5 overflow-y-auto transform -translate-x-full lg:translate-x-0 lg:static lg:w-84 lg:z-auto lg:h-auto lg:max-h-[calc(100vh-6rem)] lg:sticky lg:top-20 lg:rounded-2xl shadow-2xl lg:shadow-sm space-y-5"
+        class="fixed inset-y-0 left-0 z-50 w-[330px] max-w-[88vw] bg-white dark:bg-[#131927] border-r lg:border border-slate-300 dark:border-slate-800 p-5 overflow-y-auto transform -translate-x-full lg:translate-x-0 lg:static lg:w-84 lg:z-auto lg:h-auto lg:max-h-[calc(100vh-6rem)] lg:sticky lg:top-20 lg:rounded-2xl shadow-2xl lg:shadow-sm space-y-5"
       >
         
         <!-- Header Sidebar có Nút Đóng Trên Mobile -->
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3.5">
           <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
             </div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Bộ lọc săn kèo</h3>
@@ -121,70 +121,25 @@
           </div>
         </div>
 
-        <form id="search-form" onsubmit="handleSearch(event)" class="space-y-5">
-          
-          <!-- 1. Ô Tìm Kiếm - Chiều Cao Thoáng (h-12) & Dấu X Xóa Nhanh -->
-          <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Từ khóa cần tìm</label>
-            <div class="relative flex items-center">
-              <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 pointer-events-none"></i>
-              <input 
-                type="text" 
-                id="search-input" 
-                placeholder="Tìm kiếm thiết bị..." 
-                oninput="handleSearchInput(this)"
-                class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl pl-11 pr-10 text-sm sm:text-base outline-none transition font-medium"
-              >
-              <button 
-                type="button" 
-                id="search-clear-btn" 
-                onclick="clearInput('search-input', this)" 
-                class="hidden absolute right-3 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                title="Xóa nhanh"
-              >
-                <i data-lucide="x" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
+        <div id="filter-controls" class="space-y-5">
 
-          <!-- Lịch sử tìm kiếm -->
-          <div id="search-history-section" class="space-y-1.5">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-slate-400 text-[11px] font-medium flex items-center gap-1">
-                <i data-lucide="history" class="w-3 h-3"></i>
-                <span>Lịch sử tìm kiếm</span>
-              </span>
-              <button 
-                type="button" 
-                id="clear-history-btn" 
-                onclick="clearSearchHistory()" 
-                class="hidden text-[10px] text-slate-400 hover:text-rose-500 transition font-medium"
-              >
-                Xóa tất cả
-              </button>
-            </div>
-            <div id="search-history-chips" class="flex flex-wrap gap-1.5 text-xs">
-              <!-- Render động danh sách lịch sử qua JS -->
-            </div>
-          </div>
-
-          <!-- 2. Danh Mục Thiết Bị - Nút To & Rõ Ràng (h-12 / p-3.5) -->
+          <!-- 1. Danh Mục Thiết Bị - Nút To & Rõ Ràng (h-12 / p-3.5) -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Danh mục thiết bị</label>
+            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">Danh mục thiết bị</label>
             <div class="grid grid-cols-2 gap-2 text-sm font-semibold" id="category-pills">
-              <button type="button" onclick="selectCategory('all')" data-cat="all" class="cat-pill active p-3 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-2 shadow-xs">
+              <button type="button" onclick="selectCategory('all')" data-cat="all" class="cat-pill active p-3 rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold transition text-left flex items-center gap-2 shadow-xs">
                 <span class="text-base">🌐</span>
                 <span>Tất cả</span>
               </button>
-              <button type="button" onclick="selectCategory('pc')" data-cat="pc" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+              <button type="button" onclick="selectCategory('pc')" data-cat="pc" class="cat-pill p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-2 shadow-xs">
                 <span class="text-base">🖥️</span>
                 <span>Linh kiện PC</span>
               </button>
-              <button type="button" onclick="selectCategory('phone')" data-cat="phone" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+              <button type="button" onclick="selectCategory('phone')" data-cat="phone" class="cat-pill p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-2 shadow-xs">
                 <span class="text-base">📱</span>
                 <span>Điện thoại</span>
               </button>
-              <button type="button" onclick="selectCategory('laptop')" data-cat="laptop" class="cat-pill p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-2 shadow-xs">
+              <button type="button" onclick="selectCategory('laptop')" data-cat="laptop" class="cat-pill p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-2 shadow-xs">
                 <span class="text-base">💻</span>
                 <span>Laptop</span>
               </button>
@@ -192,42 +147,42 @@
             <input type="hidden" id="filter-category" value="all">
           </div>
 
-          <!-- 3. Nguồn Nền Tảng (Chợ Tốt, Nhật Tảo, CellphoneS, TGDĐ, Tin Học Ngôi Sao...) -->
-          <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <!-- 2. Nguồn Nền Tảng (Chợ Tốt, Nhật Tảo, CellphoneS, TGDĐ, Tin Học Ngôi Sao...) -->
+          <div class="space-y-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <div class="flex items-center justify-between text-xs">
-              <label class="font-bold text-slate-700 dark:text-slate-300">Nguồn nền tảng</label>
+              <label class="font-bold text-slate-800 dark:text-slate-200">Nguồn nền tảng</label>
               <span id="source-filter-label" class="text-blue-600 dark:text-blue-400 font-semibold text-xs">Tất cả</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5 text-xs font-semibold" id="source-pills">
-              <button type="button" onclick="selectSource('all')" data-source="all" class="source-pill active py-2 px-2.5 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('all')" data-source="all" class="source-pill active py-2 px-2.5 rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold transition text-left flex items-center gap-1.5">
                 <span>🌐</span>
                 <span class="truncate">Tất cả nguồn</span>
               </button>
-              <button type="button" onclick="selectSource('cellphones')" data-source="cellphones" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('cellphones')" data-source="cellphones" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>🔴</span>
                 <span class="truncate">CellphoneS</span>
               </button>
-              <button type="button" onclick="selectSource('tgdd')" data-source="tgdd" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('tgdd')" data-source="tgdd" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>🟡</span>
                 <span class="truncate">TGDĐ đổi trả</span>
               </button>
-              <button type="button" onclick="selectSource('chotot')" data-source="chotot" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('chotot')" data-source="chotot" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>🟠</span>
                 <span class="truncate">Chợ Tốt</span>
               </button>
-              <button type="button" onclick="selectSource('nhattao')" data-source="nhattao" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('nhattao')" data-source="nhattao" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>🟢</span>
                 <span class="truncate">Nhật Tảo</span>
               </button>
-              <button type="button" onclick="selectSource('pcpart')" data-source="pcpart" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('pcpart')" data-source="pcpart" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>⭐</span>
                 <span class="truncate">Tin Học Ngôi Sao</span>
               </button>
-              <button type="button" onclick="selectSource('hoangha')" data-source="hoangha" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('hoangha')" data-source="hoangha" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>🟣</span>
                 <span class="truncate">Hoàng Hà</span>
               </button>
-              <button type="button" onclick="selectSource('fpt')" data-source="fpt" class="source-pill py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition text-left flex items-center gap-1.5">
+              <button type="button" onclick="selectSource('fpt')" data-source="fpt" class="source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5">
                 <span>⚪</span>
                 <span class="truncate">FPT Shop</span>
               </button>
@@ -235,11 +190,11 @@
             <input type="hidden" id="filter-source" value="all">
           </div>
 
-          <!-- 4. Thanh Trượt Khoảng Giá (Thanh Dày & Nút Trượt Lớn) -->
-          <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <!-- 3. Thanh Trượt Khoảng Giá (Thanh Dày & Nút Trượt Lớn) -->
+          <div class="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
             <div class="flex items-center justify-between text-xs">
-              <span class="font-bold text-slate-700 dark:text-slate-300">Khoảng giá tối đa</span>
-              <span id="slider-price-label" class="font-bold text-blue-600 dark:text-blue-400 font-mono text-sm bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800">≤ 5.000.000 đ</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">Khoảng giá tối đa</span>
+              <span id="slider-price-label" class="font-bold text-blue-600 dark:text-blue-400 font-mono text-sm bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800">≤ 5.000.000 đ</span>
             </div>
 
             <!-- Thanh trượt lớn -->
@@ -258,18 +213,18 @@
 
             <!-- Preset Buttons nhanh (Đồng bộ trực quan, không bị lệch trạng thái) -->
             <div class="grid grid-cols-4 gap-1.5 text-xs font-semibold" id="price-preset-group">
-              <button type="button" id="preset-btn-0" onclick="setPricePreset(0)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">Tất cả</button>
-              <button type="button" id="preset-btn-5tr" onclick="setPricePreset(5000000)" class="py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-center border border-blue-600 dark:border-blue-500 shadow-xs">&lt; 5tr</button>
-              <button type="button" id="preset-btn-12tr" onclick="setPricePreset(12000000)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">&lt; 12tr</button>
-              <button type="button" id="preset-btn-20tr" onclick="setPricePreset(20000000)" class="py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700">&lt; 20tr</button>
+              <button type="button" id="preset-btn-0" onclick="setPricePreset(0)" class="py-2 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition text-center border border-slate-300 dark:border-slate-700">Tất cả</button>
+              <button type="button" id="preset-btn-5tr" onclick="setPricePreset(5000000)" class="py-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold transition text-center border-2 border-blue-600 dark:border-blue-500 shadow-xs">&lt; 5tr</button>
+              <button type="button" id="preset-btn-12tr" onclick="setPricePreset(12000000)" class="py-2 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition text-center border border-slate-300 dark:border-slate-700">&lt; 12tr</button>
+              <button type="button" id="preset-btn-20tr" onclick="setPricePreset(20000000)" class="py-2 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition text-center border border-slate-300 dark:border-slate-700">&lt; 20tr</button>
             </div>
             <input type="hidden" id="filter-max-price" value="5000000">
           </div>
 
-          <!-- 5. Khu Vực Giao Dịch (Chiều Cao h-12) -->
+          <!-- 4. Khu Vực Giao Dịch (Chiều Cao h-12) -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Khu vực</label>
-            <select id="filter-region" onchange="performSearch(document.getElementById('search-input').value)" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-medium">
+            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">Khu vực</label>
+            <select id="filter-region" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-medium">
               <option value="all">📍 Toàn quốc</option>
               <option value="Hà Nội">Hà Nội</option>
               <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
@@ -277,35 +232,102 @@
             </select>
           </div>
 
-          <!-- 6. Công Tắc Thông Minh (Khoang chọn dày dặn: p-3.5) -->
-          <div class="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">Tùy chọn chất lượng</span>
+          <!-- 5. Công Tắc Thông Minh (Khoang chọn dày dặn: p-3.5) -->
+          <div class="space-y-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">Tùy chọn chất lượng</span>
             
             <!-- Switch 1: Lọc rác & máy xác -->
-            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition">
               <span class="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5">
                 <span>🛡️</span>
                 <span>Lọc tin rác / máy xác / iCloud</span>
               </span>
-              <input type="checkbox" id="filter-hide-scam" checked onchange="performSearch(document.getElementById('search-input').value)" class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
+              <input type="checkbox" id="filter-hide-scam" checked class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
             </label>
 
             <!-- Switch 2: Chỉ người dùng bán -->
-            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+            <label class="flex items-center justify-between cursor-pointer text-xs sm:text-sm select-none p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition">
               <span class="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5">
                 <span>👤</span>
                 <span>Chỉ người dùng (ẩn thợ)</span>
               </span>
-              <input type="checkbox" id="filter-user-only" onchange="performSearch(document.getElementById('search-input').value)" class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
+              <input type="checkbox" id="filter-user-only" class="w-5 h-5 rounded text-blue-600 focus:ring-0 cursor-pointer">
             </label>
           </div>
 
-        </form>
+          <!-- Nút Áp Dụng Bộ Lọc (Kokonut Ui Tactile Button) -->
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 bg-white dark:bg-[#131927] py-3 -mx-5 px-5 shadow-lg lg:shadow-none">
+            <button 
+              type="button" 
+              id="apply-filters-btn" 
+              onclick="applyFilters()" 
+              class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition cursor-pointer"
+            >
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Áp dụng bộ lọc</span>
+            </button>
+          </div>
+
+        </div>
 
       </aside>
 
       <!-- MAIN CONTENT (Khu Vực Nội Dung Cuộn Tự Do) -->
       <section class="flex-1 min-w-0 w-full space-y-4">
+
+        <!-- Thanh Tìm Kiếm Chính Cho Mục Tra Cứu (Đưa Ra Ngoài Nổi Bật) -->
+        <div class="bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
+          <form id="search-form" onsubmit="handleSearch(event)" class="flex items-center gap-2">
+            <div class="relative flex-1 flex items-center">
+              <i data-lucide="search" class="w-5 h-5 text-slate-400 dark:text-slate-500 absolute left-3.5 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Tìm thiết bị..." 
+                oninput="handleSearchInput(this)"
+                class="w-full h-12 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl pl-11 pr-10 text-base outline-none transition font-medium"
+              >
+              <button 
+                type="button" 
+                id="search-clear-btn" 
+                onclick="clearInput('search-input', this)" 
+                class="hidden absolute right-3 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                title="Xóa tìm kiếm"
+              >
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+            
+            <button 
+              type="submit" 
+              class="h-12 px-4 sm:px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-sm flex items-center gap-2 shrink-0 transition shadow-sm shadow-blue-500/25"
+            >
+              <i data-lucide="search" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Tìm kiếm</span>
+            </button>
+          </form>
+
+          <!-- Lịch sử tìm kiếm -->
+          <div id="search-history-section" class="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-600 dark:text-slate-400 text-xs font-semibold flex items-center gap-1.5">
+                <i data-lucide="history" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500"></i>
+                <span>Lịch sử tìm kiếm</span>
+              </span>
+              <button 
+                type="button" 
+                id="clear-history-btn" 
+                onclick="clearSearchHistory()" 
+                class="hidden text-[11px] text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 transition font-medium"
+              >
+                Xóa tất cả
+              </button>
+            </div>
+            <div id="search-history-chips" class="flex flex-wrap gap-1.5 text-xs">
+              <!-- Render động danh sách lịch sử qua JS -->
+            </div>
+          </div>
+        </div>
         
         <!-- Thanh Toolbar Sắp Xếp & Nút Mở Bộ Lọc Nhanh Trên Mobile (Gọn Gàng, Không Bị Vỡ) -->
         <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3.5 shadow-xs flex items-center justify-between gap-2">
@@ -436,14 +458,14 @@
     <!-- === VIEW 2: CHECK IMEI & SERIAL === -->
     <div id="view-verify" class="hidden max-w-4xl mx-auto space-y-6">
       
-      <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs">
+      <div class="bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div class="flex items-center space-x-3 mb-2">
           <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
             <i data-lucide="shield-check" class="w-5 h-5"></i>
           </div>
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Thẩm định IMEI & Serial</h2>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Kiểm tra thuật toán Luhn Checksum, nhận diện TAC & truy cứu nguồn gốc</p>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">Kiểm tra thuật toán Luhn Checksum, nhận diện TAC & truy cứu nguồn gốc</p>
           </div>
         </div>
 
@@ -456,7 +478,7 @@
                 id="verify-input" 
                 placeholder="Nhập IMEI, Serial..." 
                 oninput="toggleClearBtn(this, 'verify-clear-btn')"
-                class="w-full h-12 sm:h-14 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:border-blue-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl px-4 text-sm sm:text-base font-mono outline-none transition font-medium"
+                class="w-full h-12 sm:h-14 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 focus:border-blue-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl px-4 text-base font-mono outline-none transition font-medium"
               >
               <button 
                 type="button" 
@@ -480,16 +502,16 @@
           </div>
 
           <!-- Mẫu thử nhanh -->
-          <div class="flex items-center flex-wrap gap-2 text-xs text-slate-400 pt-1">
-            <span class="text-slate-500 text-xs mr-1 font-medium">Mẫu thử:</span>
-            <button type="button" onclick="setVerifyCode('359201101234566')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 font-mono text-xs transition border border-slate-200 dark:border-slate-700">359201101234566 (Chuẩn GSMA)</button>
-            <button type="button" onclick="setVerifyCode('359201101234567')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-mono text-xs transition border border-slate-200 dark:border-slate-700">359201101234567 (Sai Checksum)</button>
-            <button type="button" onclick="setVerifyCode('F2LX90KBMD6R')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-300 font-mono text-xs transition border border-slate-200 dark:border-slate-700">F2LX90KBMD6R (Apple Serial)</button>
+          <div class="flex items-center flex-wrap gap-2 text-xs text-slate-500 pt-1">
+            <span class="text-slate-600 dark:text-slate-400 text-xs mr-1 font-semibold">Mẫu thử:</span>
+            <button type="button" onclick="setVerifyCode('359201101234566')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 font-mono text-xs transition border border-slate-300 dark:border-slate-700 font-semibold">359201101234566 (Chuẩn GSMA)</button>
+            <button type="button" onclick="setVerifyCode('359201101234567')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-mono text-xs transition border border-slate-300 dark:border-slate-700 font-semibold">359201101234567 (Sai Checksum)</button>
+            <button type="button" onclick="setVerifyCode('F2LX90KBMD6R')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 font-mono text-xs transition border border-slate-300 dark:border-slate-700 font-semibold">F2LX90KBMD6R (Apple Serial)</button>
           </div>
         </div>
 
         <!-- Bảng kết quả thẩm định -->
-        <div id="verify-result" class="hidden mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-4">
+        <div id="verify-result" class="hidden mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 space-y-4">
           <!-- Render qua JS -->
         </div>
 
@@ -503,9 +525,9 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Form Đăng ký (Chiều cao h-12 đầm tay) -->
-        <div class="lg:col-span-1 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
-          <div class="flex items-center space-x-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+        <div class="lg:col-span-1 bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div class="flex items-center space-x-2.5 pb-3 border-b border-slate-200 dark:border-slate-800">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
             </div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Thêm mục theo dõi</h3>
@@ -513,9 +535,9 @@
 
           <form id="watchdog-form" onsubmit="handleCreateWatchdog(event)" class="space-y-4 text-xs sm:text-sm">
             <div>
-              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-xs">Tên thiết bị (*)</label>
+              <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1.5 text-xs">Tên thiết bị (*)</label>
               <div class="relative flex items-center">
-                <input type="text" id="wd-keyword" required placeholder="Tên thiết bị..." oninput="toggleClearBtn(this, 'wd-kw-clear')" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 pr-10 font-medium">
+                <input type="text" id="wd-keyword" required placeholder="Tên thiết bị..." oninput="toggleClearBtn(this, 'wd-kw-clear')" class="w-full h-12 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-base text-slate-900 dark:text-white outline-none focus:border-blue-500 pr-10 font-medium">
                 <button type="button" id="wd-kw-clear" onclick="clearInput('wd-keyword', this)" class="hidden absolute right-3 p-1.5 text-slate-400 hover:text-slate-600">
                   <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -523,9 +545,9 @@
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-xs">Mức giá trần (VNĐ) (*)</label>
+              <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1.5 text-xs">Mức giá trần (VNĐ) (*)</label>
               <div class="relative flex items-center">
-                <input type="number" id="wd-max-price" required placeholder="Mức giá trần..." oninput="toggleClearBtn(this, 'wd-price-clear')" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 pr-10 font-medium">
+                <input type="number" id="wd-max-price" required placeholder="Mức giá trần..." oninput="toggleClearBtn(this, 'wd-price-clear')" class="w-full h-12 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-base text-slate-900 dark:text-white outline-none focus:border-blue-500 pr-10 font-medium">
                 <button type="button" id="wd-price-clear" onclick="clearInput('wd-max-price', this)" class="hidden absolute right-3 p-1.5 text-slate-400 hover:text-slate-600">
                   <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -533,8 +555,8 @@
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-xs">Danh mục</label>
-              <select id="wd-category" class="w-full h-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-medium">
+              <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1.5 text-xs">Danh mục</label>
+              <select id="wd-category" class="w-full h-12 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-base text-slate-900 dark:text-white outline-none focus:border-blue-500 font-medium">
                 <option value="all">Tất cả danh mục</option>
                 <option value="pc">Linh kiện PC / máy bàn</option>
                 <option value="phone">Điện thoại / tablet</option>
@@ -542,14 +564,14 @@
               </select>
             </div>
 
-            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
-              <span class="text-slate-500 dark:text-slate-400 block font-semibold text-xs">Báo qua Telegram (tùy chọn)</span>
-              <input type="text" id="wd-bot-token" placeholder="Bot Token..." class="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-xs font-mono outline-none focus:border-blue-500">
-              <input type="text" id="wd-chat-id" placeholder="Chat ID..." class="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 text-xs font-mono outline-none focus:border-blue-500">
+            <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+              <span class="text-slate-700 dark:text-slate-300 block font-semibold text-xs">Báo qua Telegram (tùy chọn)</span>
+              <input type="text" id="wd-bot-token" placeholder="Bot Token..." class="w-full h-11 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-base font-mono outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+              <input type="text" id="wd-chat-id" placeholder="Chat ID..." class="w-full h-11 bg-slate-50 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 text-base font-mono outline-none focus:border-blue-500 text-slate-900 dark:text-white">
             </div>
 
             <div class="pt-2 flex items-center space-x-2">
-              <button type="button" onclick="testTelegram()" class="w-1/2 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition font-bold text-xs sm:text-sm">
+              <button type="button" onclick="testTelegram()" class="w-1/2 h-12 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition font-bold text-xs sm:text-sm">
                 Thử bot
               </button>
               <button type="submit" class="w-1/2 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md shadow-blue-500/20 text-xs sm:text-sm active:scale-[0.98]">
@@ -639,26 +661,26 @@
         <!-- Filter chips danh mục linh kiện phong cách Kokonut Ui -->
         <div class="flex items-center gap-1.5 overflow-x-auto pt-4 text-xs font-semibold no-scrollbar" id="daily-price-cat-filters">
           <button type="button" onclick="selectDailyPriceCategory('all')" data-cat="all" class="daily-price-pill active px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold shrink-0 transition shadow-xs">Tất cả</button>
-          <button type="button" onclick="selectDailyPriceCategory('gpu')" data-cat="gpu" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">Card đồ họa (gpu)</button>
-          <button type="button" onclick="selectDailyPriceCategory('cpu')" data-cat="cpu" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">Vi xử lý (cpu)</button>
-          <button type="button" onclick="selectDailyPriceCategory('ram_ssd')" data-cat="ram_ssd" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">RAM & ssd</button>
-          <button type="button" onclick="selectDailyPriceCategory('phone')" data-cat="phone" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">Điện thoại cũ</button>
-          <button type="button" onclick="selectDailyPriceCategory('laptop')" data-cat="laptop" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">Laptop cũ</button>
-          <button type="button" onclick="selectDailyPriceCategory('monitor')" data-cat="monitor" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 transition">Màn hình</button>
+          <button type="button" onclick="selectDailyPriceCategory('gpu')" data-cat="gpu" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">Card đồ họa (gpu)</button>
+          <button type="button" onclick="selectDailyPriceCategory('cpu')" data-cat="cpu" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">Vi xử lý (cpu)</button>
+          <button type="button" onclick="selectDailyPriceCategory('ram_ssd')" data-cat="ram_ssd" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">RAM & ssd</button>
+          <button type="button" onclick="selectDailyPriceCategory('phone')" data-cat="phone" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">Điện thoại cũ</button>
+          <button type="button" onclick="selectDailyPriceCategory('laptop')" data-cat="laptop" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">Laptop cũ</button>
+          <button type="button" onclick="selectDailyPriceCategory('monitor')" data-cat="monitor" class="daily-price-pill px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 transition">Màn hình</button>
         </div>
       </div>
 
       <!-- BENTO ROW 2: SPOTLIGHT METRICS (3 BENTO BOXES) -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="daily-spotlight-row">
         <!-- Bento 1: Món giảm giá sốc nhất hôm nay -->
-        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card">
+        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800">
           <div class="space-y-1 min-w-0">
             <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
               <span>Giảm mạnh nhất</span>
             </span>
-            <h4 class="text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate" id="spotlight-hot-name">MacBook Air M1</h4>
-            <p class="text-[11px] text-neutral-500 dark:text-neutral-400" id="spotlight-hot-desc">Giảm -400.000 đ (-3.0%)</p>
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" id="spotlight-hot-name">MacBook Air M1</h4>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 font-medium" id="spotlight-hot-desc">Giảm -400.000 đ (-3.0%)</p>
           </div>
           <button type="button" onclick="huntDailyItem('MacBook Air M1', 13000000)" class="shrink-0 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition" title="Săn ngay">
             <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
@@ -666,16 +688,16 @@
         </div>
 
         <!-- Bento 2: Thống kê quy mô chỉ số -->
-        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card">
+        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800">
           <div class="space-y-1">
             <span class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
               <i data-lucide="database" class="w-3.5 h-3.5"></i>
               <span>Quy mô chỉ số</span>
             </span>
-            <h4 class="text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
               <span id="spotlight-total-tracked" class="font-mono text-base font-extrabold text-blue-600 dark:text-blue-400">23</span> mẫu thiết bị
             </h4>
-            <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Được khảo sát giá thực tế</p>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 font-medium">Được khảo sát giá thực tế</p>
           </div>
           <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
             <i data-lucide="layers" class="w-5 h-5"></i>
@@ -683,16 +705,16 @@
         </div>
 
         <!-- Bento 3: Phân khúc bình dân (< 5tr) -->
-        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card">
+        <div class="bento-box p-4 flex items-center justify-between gap-3 tactile-card bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800">
           <div class="space-y-1">
             <span class="text-[11px] font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1">
               <i data-lucide="tag" class="w-3.5 h-3.5"></i>
               <span>Phân khúc &lt; 5 triệu</span>
             </span>
-            <h4 class="text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
               <span id="spotlight-budget-count" class="font-mono text-base font-extrabold text-purple-600 dark:text-purple-400">12</span> lựa chọn hời
             </h4>
-            <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Phù hợp học sinh & sinh viên</p>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 font-medium">Phù hợp học sinh & sinh viên</p>
           </div>
           <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
             <i data-lucide="wallet" class="w-5 h-5"></i>

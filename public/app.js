@@ -329,8 +329,8 @@ function initFabScrollListener() {
 
 // === THANH TRƯỢT KHOẢNG GIÁ & ĐỒNG BỘ CÁC NÚT PRESET ===
 
-const PRESET_ACTIVE_CLASS = "py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-center border border-blue-600 dark:border-blue-500 shadow-xs";
-const PRESET_INACTIVE_CLASS = "py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 text-slate-700 dark:text-slate-300 transition text-center border border-slate-200/80 dark:border-slate-700";
+const PRESET_ACTIVE_CLASS = "py-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold transition text-center border-2 border-blue-600 dark:border-blue-500 shadow-xs";
+const PRESET_INACTIVE_CLASS = "py-2 rounded-xl bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition text-center border border-slate-300 dark:border-slate-700";
 
 function updatePricePresetButtons(priceNum) {
   const num = Number(priceNum) || 0;
@@ -359,7 +359,7 @@ function updatePricePresetButtons(priceNum) {
   });
 }
 
-function handleSliderChange(val, skipSearch = false) {
+function handleSliderChange(val) {
   const label = document.getElementById("slider-price-label");
   const hiddenInput = document.getElementById("filter-max-price");
   const num = Number(val);
@@ -373,26 +373,20 @@ function handleSliderChange(val, skipSearch = false) {
   }
 
   updatePricePresetButtons(num);
-
-  if (!skipSearch) {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-      performSearch(document.getElementById("search-input").value);
-    }, 250);
-  }
+  // Không tự động tìm kiếm khi kéo thanh trượt để tránh nhảy trang kết quả
 }
 
-function setPricePreset(val, skipSearch = false) {
+function setPricePreset(val) {
   const slider = document.getElementById("price-range-slider");
   const num = Number(val);
   if (!slider) return;
 
   if (num === 0 || num >= 30000000) {
     slider.value = 30000000;
-    handleSliderChange(30000000, skipSearch);
+    handleSliderChange(30000000);
   } else {
     slider.value = num;
-    handleSliderChange(num, skipSearch);
+    handleSliderChange(num);
   }
 }
 
@@ -405,13 +399,12 @@ function selectCategory(cat) {
   pills.forEach(p => {
     const pCat = p.getAttribute("data-cat");
     if (pCat === cat) {
-      p.className = "cat-pill active p-3 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-2 shadow-xs";
+      p.className = "cat-pill active p-3 rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold transition text-left flex items-center gap-2 shadow-xs";
     } else {
-      p.className = "cat-pill p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-left flex items-center gap-2 shadow-xs";
+      p.className = "cat-pill p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-left flex items-center gap-2 shadow-xs";
     }
   });
-
-  performSearch(document.getElementById("search-input").value);
+  // Giữ trạng thái và chỉ thực thi khi bấm nút Áp dụng bộ lọc
 }
 
 // === CHỌN NGUỒN NỀN TẢNG (PILLS) ===
@@ -424,17 +417,35 @@ function selectSource(src) {
   pills.forEach(p => {
     const pSrc = p.getAttribute("data-source");
     if (pSrc === src) {
-      p.className = "source-pill active py-2 px-2.5 rounded-xl border border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold transition text-left flex items-center gap-1.5 shadow-xs";
+      p.className = "source-pill active py-2 px-2.5 rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold transition text-left flex items-center gap-1.5 shadow-xs";
       if (label) {
         const nameSpan = p.querySelector("span:last-child");
         label.textContent = nameSpan ? nameSpan.textContent : src;
       }
     } else {
-      p.className = "source-pill py-2 px-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-left flex items-center gap-1.5";
+      p.className = "source-pill py-2 px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-left flex items-center gap-1.5";
     }
   });
+  // Giữ trạng thái và chỉ thực thi khi bấm nút Áp dụng bộ lọc
+}
 
-  performSearch(document.getElementById("search-input").value);
+// === NÚT ÁP DỤNG BỘ LỌC (KOKONUT UI TACTILE ACTION) ===
+
+function applyFilters() {
+  const searchInput = document.getElementById("search-input");
+  const q = searchInput ? searchInput.value.trim() : "";
+  closeMobileFilter();
+  performSearch(q);
+
+  const btn = document.getElementById("apply-filters-btn");
+  if (btn && window.anime) {
+    anime({
+      targets: btn,
+      scale: [0.95, 1],
+      duration: 250,
+      easing: "easeOutQuad"
+    });
+  }
 }
 
 // === ĐẶT LẠI TOÀN BỘ BỘ LỌC (RESET) ===
@@ -448,7 +459,7 @@ function resetFilters() {
 
   selectCategory("all");
   selectSource("all");
-  setPricePreset(5000000, true);
+  setPricePreset(5000000);
 
   document.getElementById("filter-region").value = "all";
   document.getElementById("filter-hide-scam").checked = true;
@@ -456,7 +467,7 @@ function resetFilters() {
   document.getElementById("filter-sort").value = "deal";
 
   clearTimeout(searchDebounceTimer);
-  performSearch("");
+  applyFilters();
 }
 
 // === ĐIỀU HƯỚNG TAB KÈM HOẠT HỌA CHUYỂN CẢNH ===
@@ -776,7 +787,7 @@ function renderResults(items) {
     const card = document.createElement("div");
 
     if (currentViewMode === "list") {
-      card.className = "deal-card bento-box tactile-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0";
+      card.className = "deal-card bento-box tactile-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0 bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 shadow-xs hover:border-blue-500";
       card.innerHTML = `
         <div class="flex items-center space-x-3.5 min-w-0 flex-1">
           <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="shrink-0 block">
@@ -784,7 +795,7 @@ function renderResults(items) {
               src="${item.image}" 
               alt="${escapeHtml(item.title)}" 
               referrerpolicy="no-referrer"
-              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:opacity-90 transition"
+              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl bg-slate-100 dark:bg-[#0b0f19] border border-slate-300 dark:border-slate-700 hover:opacity-90 transition"
               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80'"
             >
           </a>
@@ -792,10 +803,10 @@ function renderResults(items) {
             <div class="flex items-center gap-2 flex-wrap">
               <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${sourceBadgeClass}">${item.source}</span>
               ${ratingBadge}
-              <span class="text-[11px] text-neutral-400 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(item.location || 'Toàn quốc')}</span>
-              <span class="text-[11px] text-neutral-400">• ${timeAgo(item.postedTime)}</span>
+              <span class="text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${escapeHtml(item.location || 'Toàn quốc')}</span>
+              <span class="text-[11px] text-slate-600 dark:text-slate-300">• ${timeAgo(item.postedTime)}</span>
             </div>
-            <h4 class="font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 line-clamp-2 break-anywhere leading-snug">
+            <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
               <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline-flex items-center gap-1.5 group" title="${escapeHtml(item.title)}">
                 <span>${escapeHtml(item.title)}</span>
                 <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 shrink-0 inline"></i>
@@ -805,18 +816,18 @@ function renderResults(items) {
           </div>
         </div>
 
-        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800">
+        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-1.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
           <div class="text-left sm:text-right">
             <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">${formatVND(item.price)}</div>
-            <span class="text-[11px] text-neutral-400">${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}</span>
+            <span class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}</span>
           </div>
         </div>
       `;
     } else {
-      card.className = "deal-card bento-box tactile-card overflow-hidden flex flex-col justify-between min-w-0";
+      card.className = "deal-card bento-box tactile-card overflow-hidden flex flex-col justify-between min-w-0 bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 shadow-xs hover:border-blue-500";
       card.innerHTML = `
         <div class="min-w-0 flex flex-col h-full">
-          <div class="relative h-44 w-full bg-neutral-100 dark:bg-neutral-900 overflow-hidden group shrink-0">
+          <div class="relative h-44 w-full bg-slate-100 dark:bg-[#0b0f19] overflow-hidden group shrink-0">
             <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="block w-full h-full">
               <img 
                 src="${item.image}" 
@@ -827,12 +838,12 @@ function renderResults(items) {
               >
             </a>
             
-            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-neutral-700 dark:text-neutral-200 bg-white/95 dark:bg-neutral-900/95 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs border border-neutral-200/60 dark:border-neutral-800/60 pointer-events-none">
+            <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-[11px] text-slate-800 dark:text-slate-100 bg-white/95 dark:bg-[#0b0f19]/95 backdrop-blur px-2.5 py-1 rounded-lg gap-2 shadow-xs border border-slate-300 dark:border-slate-700 pointer-events-none font-medium">
               <span class="truncate min-w-0 flex items-center gap-1 font-medium">
-                <i data-lucide="map-pin" class="w-3 h-3 text-neutral-400 shrink-0"></i>
+                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400 shrink-0"></i>
                 <span class="truncate">${escapeHtml(item.location || 'Toàn quốc')}</span>
               </span>
-              <span class="shrink-0 flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-medium">
+              <span class="shrink-0 flex items-center gap-1 text-slate-600 dark:text-slate-300 font-medium">
                 <i data-lucide="clock" class="w-3 h-3 shrink-0"></i>
                 <span>${timeAgo(item.postedTime)}</span>
               </span>
@@ -849,7 +860,7 @@ function renderResults(items) {
                 ${ratingBadge}
               </div>
 
-              <h4 class="font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 line-clamp-2 break-anywhere leading-snug">
+              <h4 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 break-anywhere leading-snug">
                 <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition inline group" title="${escapeHtml(item.title)}">
                   <span>${escapeHtml(item.title)}</span>
                   <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-blue-500 inline ml-1 align-baseline shrink-0"></i>
@@ -861,20 +872,20 @@ function renderResults(items) {
                   <div class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight truncate">
                     ${formatVND(item.price)}
                   </div>
-                  <div class="text-xs text-neutral-400 truncate">
+                  <div class="text-xs text-slate-600 dark:text-slate-400 truncate font-medium">
                     ${item.dealRating?.desc || "Mức giá hợp lý"}
                   </div>
                 </div>
                 
                 <div class="shrink-0">
-                  <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700/60">
+                  <span class="text-[11px] px-2 py-0.5 rounded-md font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
                     ${item.isShop ? '🏪 Cửa hàng' : '👤 Người dùng'}
                   </span>
                 </div>
               </div>
 
-              <div class="bg-neutral-50 dark:bg-neutral-950/60 p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 min-h-[46px] flex items-center overflow-hidden">
-                <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed break-anywhere m-0">
+              <div class="bg-slate-50 dark:bg-[#0b0f19] p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 min-h-[46px] flex items-center overflow-hidden">
+                <p class="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed break-anywhere m-0">
                 ${escapeHtml(item.description || item.condition || "Đã qua sử dụng")}
                 </p>
               </div>
@@ -1829,12 +1840,12 @@ function renderDailyPrices(items) {
     }
 
     const card = document.createElement("div");
-    card.className = "bento-box tactile-card p-5 transition flex flex-col justify-between space-y-4";
+    card.className = "bento-box tactile-card p-5 transition flex flex-col justify-between space-y-4 bg-white dark:bg-[#131927] border border-slate-300 dark:border-slate-800 shadow-xs hover:border-blue-500";
     card.innerHTML = `
       <div class="space-y-3">
         <!-- Header card: Category & Trend -->
         <div class="flex items-center justify-between gap-2 flex-wrap">
-          <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60">
+          <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
             ${escapeHtml(item.categoryName)}
           </span>
           ${trendBadge}
@@ -1842,24 +1853,24 @@ function renderDailyPrices(items) {
 
         <!-- Tên linh kiện -->
         <div>
-          <h3 class="font-extrabold text-base text-neutral-900 dark:text-neutral-100 leading-snug">
+          <h3 class="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
             ${escapeHtml(item.name)}
           </h3>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed font-medium">
             ${escapeHtml(item.spec)}
           </p>
         </div>
 
         <!-- Khung giá: Giá sàn vs Giá trung bình -->
-        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200/60 dark:border-white/5">
+        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800">
           <div>
-            <span class="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Giá sàn săn được</span>
+            <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Giá sàn săn được</span>
             <span class="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">
               ${formatVND(item.minPrice)}
             </span>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Giá TB thị trường</span>
+            <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Giá tb thị trường</span>
             <span class="text-base font-bold text-blue-600 dark:text-blue-400 font-mono">
               ${formatVND(item.avgPrice)}
             </span>
@@ -1867,7 +1878,7 @@ function renderDailyPrices(items) {
         </div>
 
         <!-- Nhãn khuyến nghị -->
-        <div class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+        <div class="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
           <span>${item.recommendationLabel || "✨ Giá tốt"}</span>
         </div>
       </div>

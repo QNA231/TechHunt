@@ -8,19 +8,31 @@
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Kokonut Ui Light Theme (Trung tính ấm, dễ chịu cho mắt) */
-  --bg-neutral-light: #f8f9fa;
+  /* Kokonut Ui Light Theme (Độ tương phản cao, trung tính ấm dịu mắt, sắc nét) */
+  --bg-neutral-light: #f4f4f6;
   --card-light: #ffffff;
-  --border-light: rgba(24, 24, 27, 0.08);
-  --text-primary-light: #18181b;
-  --text-secondary-light: #71717a;
+  --border-light: #cbd5e1;
+  --text-primary-light: #0f172a;
+  --text-secondary-light: #475569;
 
-  /* Kokonut Ui Dark Theme (Than tối dịu, không gắt) */
-  --bg-neutral-dark: #09090b;
-  --card-dark: #121215;
-  --border-dark: rgba(255, 255, 255, 0.08);
-  --text-primary-dark: #fafafa;
-  --text-secondary-dark: #a1a1aa;
+  /* Kokonut Ui Dark Theme (Màu than ấm, tương phản cao, viền phản xạ ánh sáng mỏng) */
+  --bg-neutral-dark: #0b0f19;
+  --card-dark: #131927;
+  --border-dark: #273349;
+  --text-primary-dark: #f8fafc;
+  --text-secondary-dark: #cbd5e1;
+}
+
+/* Chống tự động zoom trên Safari iOS và Chrome Mobile khi chạm vào ô nhập */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+@media screen and (max-width: 768px) {
+  input, select, textarea, button {
+    font-size: 16px !important;
+    touch-action: manipulation;
+  }
 }
 
 body {
@@ -78,21 +90,21 @@ code, .font-mono {
   background: var(--card-light);
   border: 1px solid var(--border-light);
   border-radius: 1.25rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 4px 14px rgba(15, 23, 42, 0.04);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dark .bento-box {
   background: var(--card-dark);
   border: 1px solid var(--border-dark);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .bento-box:hover {
-  border-color: rgba(37, 99, 235, 0.25);
+  border-color: rgba(37, 99, 235, 0.4);
 }
 .dark .bento-box:hover {
-  border-color: rgba(96, 165, 250, 0.25);
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 /* Thanh điều khiển trung tâm (Command Bar Input) */
