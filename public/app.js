@@ -115,6 +115,7 @@ function openMobileFilter() {
   const backdrop = document.getElementById("sidebar-backdrop");
   if (!sidebar || !backdrop) return;
 
+  sidebar.classList.add("drawer-open");
   sidebar.classList.remove("-translate-x-full");
   sidebar.classList.add("translate-x-0");
   backdrop.classList.remove("hidden");
@@ -126,6 +127,7 @@ function closeMobileFilter() {
   const backdrop = document.getElementById("sidebar-backdrop");
   if (!sidebar || !backdrop) return;
 
+  sidebar.classList.remove("drawer-open");
   sidebar.classList.remove("translate-x-0");
   sidebar.classList.add("-translate-x-full");
   backdrop.classList.add("hidden");
@@ -536,7 +538,11 @@ function switchTab(tab) {
       opacity: [0, 1],
       translateY: [6, 0],
       duration: 220,
-      easing: "easeOutQuad"
+      easing: "easeOutQuad",
+      complete: () => {
+        // Xóa thuộc tính transform inline để không tạo stacking context làm lệch vị trí fixed trên mobile
+        activeView.style.transform = "";
+      }
     });
   }
 

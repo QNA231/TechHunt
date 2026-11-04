@@ -219,9 +219,30 @@ input[type="range"]::-moz-range-thumb {
   max-height: 4.05rem;
 }
 
-/* Hiệu ứng trượt Drawer Mobile mượt mà */
-#filter-sidebar {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Quản lý ngăn kéo Mobile Drawer hoàn hảo, chống tràn lọt viền và shadow */
+@media screen and (max-width: 1023px) {
+  #filter-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 50 !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s !important;
+  }
+
+  #filter-sidebar:not(.drawer-open) {
+    transform: translateX(-110%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+  }
+
+  #filter-sidebar.drawer-open {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
+  }
 }
 
 /* Điểm sáng nhấp nháy trực tiếp (Live pulse dot) */
